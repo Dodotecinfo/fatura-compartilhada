@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Fatura Compartilhada</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
@@ -135,6 +136,14 @@
     color: var(--muted);
     margin-top: 6px;
   }
+  .saldo-updated{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--green);
+    margin-top: 4px;
+    display: none;
+  }
+  .saldo-updated.show{ display: block; }
 
   /* Ledger summary strip */
   .ledger{
@@ -387,7 +396,7 @@
           <span class="saldo-prefix">R$</span>
           <input type="number" id="saldoCartao" step="0.01" placeholder="0,00" inputmode="decimal">
         </div>
-        <div class="saldo-hint">Incluído no XML exportado</div>
+        <div class="saldo-updated" id="saldoAtualizadoEm"></div>
       </div>
 
       <div class="ledger">
@@ -470,6 +479,8 @@
       </div>
       <p class="hint">Gera o XML da fatura atual pra você mandar por WhatsApp, e-mail etc. pro seu familiar importar no aparelho dele.</p>
       <button class="btn btn-primary" id="btnExport">Gerar e baixar XML</button>
+      <button class="btn btn-secondary" id="btnExportExcel">Baixar como planilha Excel (.xlsx)</button>
+      <p class="hint" style="margin-top:8px;">A planilha é só para consulta/backup (abrir no Excel) — quem for importar no app continua precisando do arquivo .xml.</p>
       <textarea id="xmlOutput" readonly placeholder="O XML gerado aparece aqui — toque e segure pra copiar."></textarea>
 
       <div class="section-title">
@@ -489,11 +500,32 @@
 <script>
 (function(){
   const STORAGE_KEY = 'fatura_compartilhada_v1';
-  let data = { mes: '', ano: '', cartao: '', saldo_cartao: null, avulsas: [], parceladas: [] };
+  let data = { mes: '', ano: '', cartao: '', saldo_cartao: null, saldo_atualizado_em: null, avulsas: [], parceladas: [] };
+
+  function fmtDataHora(iso){
+    if(!iso) return '';
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const min = String(d.getMinutes()).padStart(2,'0');
+    return `Atualizado em ${dd}/${mm}/${yyyy} às ${hh}:${min}`;
+  }
+
+  function renderSaldoAtualizado(){
+    const el = document.getElementById('saldoAtualizadoEm');
+    const txt = fmtDataHora(data.saldo_atualizado_em);
+    el.textContent = txt;
+    el.classList.toggle('show', !!txt);
+  }
 
   document.getElementById('saldoCartao').addEventListener('change', ()=>{
     const v = document.getElementById('saldoCartao').value;
     data.saldo_cartao = v === '' ? null : parseFloat(v);
+    data.saldo_atualizado_em = v === '' ? null : new Date().toISOString();
+    renderSaldoAtualizado();
     saveData();
   });
 
@@ -507,6 +539,7 @@
     if(data.saldo_cartao !== null && data.saldo_cartao !== undefined){
       document.getElementById('saldoCartao').value = data.saldo_cartao;
     }
+    renderSaldoAtualizado();
   }
   function saveData(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -703,6 +736,9 @@
     xml += `<fatura mes="${mes}" ano="${ano}" cartao="Bradesco">\n`;
     if(data.saldo_cartao !== null && data.saldo_cartao !== undefined && !isNaN(data.saldo_cartao)){
       xml += `  <saldo_cartao>${Number(data.saldo_cartao).toFixed(2)}</saldo_cartao>\n`;
+      if(data.saldo_atualizado_em){
+        xml += `  <saldo_atualizado_em>${data.saldo_atualizado_em}</saldo_atualizado_em>\n`;
+      }
     }
     xml += '  <compras_avulsas>\n';
     data.avulsas.forEach(item=>{
@@ -755,6 +791,60 @@
     return t;
   }
 
+  // Export Excel
+  document.getElementById('btnExportExcel').addEventListener('click', ()=>{
+    if(typeof XLSX === 'undefined'){
+      toast('Não foi possível carregar o gerador de planilha. Verifique sua conexão.');
+      return;
+    }
+
+    const now = new Date();
+    const mes = String(now.getMonth()+1).padStart(2,'0');
+    const ano = String(now.getFullYear());
+
+    const totA = data.avulsas.reduce((s,i)=>s+i.valor,0);
+    const totP = data.parceladas.reduce((s,i)=>s+i.valor,0);
+
+    const resumo = [
+      ['Resumo da fatura'],
+      [],
+      ['Saldo do cartão (R$)', data.saldo_cartao !== null && data.saldo_cartao !== undefined ? data.saldo_cartao : ''],
+      ['Atualizado em', fmtDataHora(data.saldo_atualizado_em) ? fmtDataHora(data.saldo_atualizado_em).replace('Atualizado em ','') : ''],
+      [],
+      ['Total avulsas (R$)', Number(totA.toFixed(2))],
+      ['Total parceladas (R$)', Number(totP.toFixed(2))],
+      ['Total geral (R$)', Number((totA+totP).toFixed(2))],
+    ];
+
+    const avulsasSheet = [
+      ['Data', 'Descrição', 'Valor (R$)'],
+      ...data.avulsas
+        .slice()
+        .sort((a,b)=> a.data < b.data ? 1 : -1)
+        .map(i => [i.data, i.descricao, i.valor])
+    ];
+
+    const parceladasSheet = [
+      ['Data', 'Descrição', 'Valor da Parcela (R$)', 'Parcela Atual', 'Parcelas Totais'],
+      ...data.parceladas
+        .slice()
+        .sort((a,b)=> a.data < b.data ? 1 : -1)
+        .map(i => [i.data, i.descricao, i.valor, i.parcela_atual, i.parcelas_totais])
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumo), 'Resumo');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(avulsasSheet), 'Avulsas');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(parceladasSheet), 'Parceladas');
+
+    try{
+      XLSX.writeFile(wb, `fatura-${ano}-${mes}.xlsx`);
+      toast('Planilha Excel baixada.');
+    }catch(e){
+      toast('Não foi possível baixar a planilha.');
+    }
+  });
+
   // Import
   document.getElementById('fileInput').addEventListener('change', (e)=>{
     const file = e.target.files[0];
@@ -771,6 +861,8 @@
 
         const saldoNode = xmlDoc.querySelector('fatura > saldo_cartao');
         const saldoVal = saldoNode ? parseFloat(saldoNode.textContent) : null;
+        const saldoDataNode = xmlDoc.querySelector('fatura > saldo_atualizado_em');
+        const saldoData = saldoDataNode ? saldoDataNode.textContent : null;
 
         const avulsas = [];
         xmlDoc.querySelectorAll('compras_avulsas > compra').forEach(node=>{
@@ -795,7 +887,9 @@
         data.avulsas = avulsas;
         data.parceladas = parceladas;
         data.saldo_cartao = (saldoVal !== null && !isNaN(saldoVal)) ? saldoVal : null;
+        data.saldo_atualizado_em = data.saldo_cartao !== null ? saldoData : null;
         document.getElementById('saldoCartao').value = data.saldo_cartao !== null ? data.saldo_cartao : '';
+        renderSaldoAtualizado();
         saveData();
         render();
 
@@ -814,8 +908,9 @@
 
   document.getElementById('btnClear').addEventListener('click', ()=>{
     if(confirm('Apagar todos os lançamentos e o saldo deste aparelho?')){
-      data = { mes:'', ano:'', cartao:'', saldo_cartao: null, avulsas: [], parceladas: [] };
+      data = { mes:'', ano:'', cartao:'', saldo_cartao: null, saldo_atualizado_em: null, avulsas: [], parceladas: [] };
       document.getElementById('saldoCartao').value = '';
+      renderSaldoAtualizado();
       saveData();
       render();
       toast('Fatura limpa.');

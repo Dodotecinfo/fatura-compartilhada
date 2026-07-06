@@ -90,6 +90,52 @@
   .view{ display: none; }
   .view.active{ display: block; }
 
+  /* Saldo do cartão */
+  .saldo-card{
+    background: var(--surface);
+    border: 1px solid var(--red-dim);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .saldo-label{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .saldo-input-wrap{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .saldo-prefix{
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--red);
+  }
+  .saldo-input-wrap input{
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    padding: 4px 2px;
+    outline: none;
+  }
+  .saldo-input-wrap input:focus{ border-bottom-color: var(--red); }
+  .saldo-hint{
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
   /* Ledger summary strip */
   .ledger{
     display: grid;
@@ -335,6 +381,15 @@
 
     <!-- VER FATURA -->
     <section class="view active" id="view-ver">
+      <div class="saldo-card">
+        <div class="saldo-label">Saldo do cartão de crédito</div>
+        <div class="saldo-input-wrap">
+          <span class="saldo-prefix">R$</span>
+          <input type="number" id="saldoCartao" step="0.01" placeholder="0,00" inputmode="decimal">
+        </div>
+        <div class="saldo-hint">Incluído no XML exportado</div>
+      </div>
+
       <div class="ledger">
         <div class="cell">
           <span class="label">Avulsas</span>
@@ -434,7 +489,13 @@
 <script>
 (function(){
   const STORAGE_KEY = 'fatura_compartilhada_v1';
-  let data = { mes: '', ano: '', cartao: '', avulsas: [], parceladas: [] };
+  let data = { mes: '', ano: '', cartao: '', saldo_cartao: null, avulsas: [], parceladas: [] };
+
+  document.getElementById('saldoCartao').addEventListener('change', ()=>{
+    const v = document.getElementById('saldoCartao').value;
+    data.saldo_cartao = v === '' ? null : parseFloat(v);
+    saveData();
+  });
 
   function loadData(){
     try{
@@ -443,6 +504,9 @@
     }catch(e){}
     if(!data.avulsas) data.avulsas = [];
     if(!data.parceladas) data.parceladas = [];
+    if(data.saldo_cartao !== null && data.saldo_cartao !== undefined){
+      document.getElementById('saldoCartao').value = data.saldo_cartao;
+    }
   }
   function saveData(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -637,6 +701,9 @@
 
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += `<fatura mes="${mes}" ano="${ano}" cartao="Bradesco">\n`;
+    if(data.saldo_cartao !== null && data.saldo_cartao !== undefined && !isNaN(data.saldo_cartao)){
+      xml += `  <saldo_cartao>${Number(data.saldo_cartao).toFixed(2)}</saldo_cartao>\n`;
+    }
     xml += '  <compras_avulsas>\n';
     data.avulsas.forEach(item=>{
       xml += '    <compra>\n';
@@ -702,6 +769,9 @@
         const errorNode = xmlDoc.querySelector('parsererror');
         if(errorNode) throw new Error('XML inválido');
 
+        const saldoNode = xmlDoc.querySelector('fatura > saldo_cartao');
+        const saldoVal = saldoNode ? parseFloat(saldoNode.textContent) : null;
+
         const avulsas = [];
         xmlDoc.querySelectorAll('compras_avulsas > compra').forEach(node=>{
           avulsas.push({
@@ -724,6 +794,8 @@
 
         data.avulsas = avulsas;
         data.parceladas = parceladas;
+        data.saldo_cartao = (saldoVal !== null && !isNaN(saldoVal)) ? saldoVal : null;
+        document.getElementById('saldoCartao').value = data.saldo_cartao !== null ? data.saldo_cartao : '';
         saveData();
         render();
 
@@ -741,8 +813,9 @@
   });
 
   document.getElementById('btnClear').addEventListener('click', ()=>{
-    if(confirm('Apagar todos os lançamentos deste aparelho?')){
-      data = { mes:'', ano:'', cartao:'', avulsas: [], parceladas: [] };
+    if(confirm('Apagar todos os lançamentos e o saldo deste aparelho?')){
+      data = { mes:'', ano:'', cartao:'', saldo_cartao: null, avulsas: [], parceladas: [] };
+      document.getElementById('saldoCartao').value = '';
       saveData();
       render();
       toast('Fatura limpa.');

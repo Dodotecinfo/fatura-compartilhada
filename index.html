@@ -211,7 +211,9 @@
     justify-content: space-between;
     align-items: center;
     gap: 10px;
+    cursor: pointer;
   }
+  .item:active{ background: var(--surface-2); }
   .item .info{ min-width: 0; flex: 1; }
   .item .desc{
     font-size: 13.5px;
@@ -349,6 +351,20 @@
     color: var(--muted);
     font-size: 12px;
   }
+  .file-picker{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .file-picker .btn{ width: 100%; }
+  .file-name{
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 2px 2px;
+  }
+  .file-name.has-file{ color: var(--green); }
 
   .toast{
     position: fixed;
@@ -470,6 +486,7 @@
       </div>
 
       <button class="btn btn-primary" id="btnAdd">Adicionar lançamento</button>
+      <button class="btn btn-secondary" id="btnCancelEdit" style="display:none;">Cancelar edição</button>
     </section>
 
     <!-- EXPORTAR / IMPORTAR -->
@@ -487,7 +504,11 @@
         <h2>Importar</h2>
       </div>
       <p class="hint">Escolha o arquivo .xml recebido para carregar a fatura na aba "Ver fatura". Isso substitui os lançamentos atuais deste aparelho.</p>
-      <input type="file" id="fileInput" accept=".xml,text/xml">
+      <div class="file-picker">
+        <input type="file" id="fileInput" accept=".xml,text/xml" style="display:none;">
+        <button type="button" class="btn btn-secondary" id="btnChooseFile">📄 Escolher arquivo XML</button>
+        <span class="file-name" id="fileNameDisplay">Nenhum arquivo selecionado</span>
+      </div>
       <button class="btn btn-secondary" id="btnClear">Limpar tudo</button>
     </section>
 
@@ -577,18 +598,80 @@
 
   // Type toggle on Lançar
   let currentType = 'avulsa';
+  let editingList = null;
+  let editingIndex = null;
   const typeButtons = document.querySelectorAll('.type-toggle button');
   const parcelaFields = document.getElementById('parcelaFields');
   const fieldValorAvulsa = document.getElementById('fieldValorAvulsa');
+
+  function selectType(type){
+    currentType = type;
+    typeButtons.forEach(b=> b.classList.toggle('sel', b.dataset.type === type));
+    const isParcelada = type === 'parcelada';
+    parcelaFields.classList.toggle('show', isParcelada);
+    fieldValorAvulsa.style.display = isParcelada ? 'none' : 'block';
+  }
+
   typeButtons.forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      typeButtons.forEach(b=>b.classList.remove('sel'));
-      btn.classList.add('sel');
-      currentType = btn.dataset.type;
-      const isParcelada = currentType === 'parcelada';
-      parcelaFields.classList.toggle('show', isParcelada);
-      fieldValorAvulsa.style.display = isParcelada ? 'none' : 'block';
-    });
+    btn.addEventListener('click', ()=> selectType(btn.dataset.type));
+  });
+
+  function clearForm(){
+    document.getElementById('fData').value = '';
+    document.getElementById('fDesc').value = '';
+    document.getElementById('fValor').value = '';
+    document.getElementById('fValorTotalCompra').value = '';
+    document.getElementById('fParcelaAtual').value = '';
+    document.getElementById('fParcelaTotal').value = '';
+    document.getElementById('fValorParcelaCalc').value = '';
+    document.getElementById('fValorParcelaCalc').dataset.raw = '';
+  }
+
+  function setEditMode(isEditing){
+    document.getElementById('btnAdd').textContent = isEditing ? 'Salvar alterações' : 'Adicionar lançamento';
+    document.getElementById('btnCancelEdit').style.display = isEditing ? 'block' : 'none';
+  }
+
+  function startEdit(list, idx){
+    const item = data[list][idx];
+    if(!item) return;
+    editingList = list;
+    editingIndex = idx;
+
+    tabs.forEach(t=>t.classList.remove('active'));
+    views.forEach(v=>v.classList.remove('active'));
+    document.querySelector('[data-view="add"]').classList.add('active');
+    document.getElementById('view-add').classList.add('active');
+
+    document.getElementById('fData').value = item.data;
+    document.getElementById('fDesc').value = item.descricao;
+
+    if(list === 'avulsas'){
+      selectType('avulsa');
+      document.getElementById('fValor').value = item.valor;
+    } else {
+      selectType('parcelada');
+      const totalEstimado = Math.round(item.valor * item.parcelas_totais * 100) / 100;
+      document.getElementById('fValorTotalCompra').value = totalEstimado;
+      document.getElementById('fParcelaAtual').value = item.parcela_atual;
+      document.getElementById('fParcelaTotal').value = item.parcelas_totais;
+      calcValorParcela();
+    }
+
+    setEditMode(true);
+    toast('Editando lançamento — altere e toque em Salvar.');
+  }
+
+  document.getElementById('btnCancelEdit').addEventListener('click', ()=>{
+    editingList = null;
+    editingIndex = null;
+    clearForm();
+    setEditMode(false);
+    tabs.forEach(t=>t.classList.remove('active'));
+    views.forEach(v=>v.classList.remove('active'));
+    document.querySelector('[data-view="ver"]').classList.add('active');
+    document.getElementById('view-ver').classList.add('active');
+    render();
   });
 
   function calcValorParcela(){
@@ -610,6 +693,7 @@
   document.getElementById('btnAdd').addEventListener('click', ()=>{
     const dataVal = document.getElementById('fData').value;
     const desc = document.getElementById('fDesc').value.trim();
+    const isEditing = editingList !== null && editingIndex !== null;
 
     if(currentType === 'avulsa'){
       const valor = parseFloat(document.getElementById('fValor').value);
@@ -617,11 +701,14 @@
         toast('Preencha data, descrição e valor.');
         return;
       }
-      data.avulsas.push({ data: dataVal, descricao: desc, valor: valor });
-      saveData();
-      toast('Lançamento adicionado.');
-      document.getElementById('fDesc').value = '';
-      document.getElementById('fValor').value = '';
+      const novoItem = { data: dataVal, descricao: desc, valor: valor };
+      if(isEditing){
+        data[editingList][editingIndex] = novoItem;
+        toast('Lançamento atualizado.');
+      } else {
+        data.avulsas.push(novoItem);
+        toast('Lançamento adicionado.');
+      }
     } else {
       const totalCompra = parseFloat(document.getElementById('fValorTotalCompra').value);
       const atual = parseInt(document.getElementById('fParcelaAtual').value) || 1;
@@ -633,24 +720,43 @@
         return;
       }
 
-      data.parceladas.push({
+      const novoItem = {
         data: dataVal, descricao: desc,
         valor: parseFloat(raw),
         parcela_atual: atual, parcelas_totais: totalParcelas
-      });
-      saveData();
-      toast(`Lançamento adicionado: ${totalParcelas}x de ${parseFloat(raw).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}.`);
-      document.getElementById('fDesc').value = '';
-      document.getElementById('fValorTotalCompra').value = '';
-      document.getElementById('fParcelaAtual').value = '';
-      document.getElementById('fParcelaTotal').value = '';
-      document.getElementById('fValorParcelaCalc').value = '';
-      document.getElementById('fValorParcelaCalc').dataset.raw = '';
+      };
+      if(isEditing){
+        data[editingList][editingIndex] = novoItem;
+        toast('Lançamento atualizado.');
+      } else {
+        data.parceladas.push(novoItem);
+        toast(`Lançamento adicionado: ${totalParcelas}x de ${parseFloat(raw).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}.`);
+      }
     }
+
+    saveData();
+    clearForm();
+
+    if(isEditing){
+      editingList = null;
+      editingIndex = null;
+      setEditMode(false);
+      tabs.forEach(t=>t.classList.remove('active'));
+      views.forEach(v=>v.classList.remove('active'));
+      document.querySelector('[data-view="ver"]').classList.add('active');
+      document.getElementById('view-ver').classList.add('active');
+    }
+    render();
   });
 
   function removeItem(list, idx){
     data[list].splice(idx, 1);
+    if(editingList === list && editingIndex === idx){
+      editingList = null;
+      editingIndex = null;
+      clearForm();
+      setEditMode(false);
+    }
     saveData();
     render();
   }
@@ -675,6 +781,8 @@
         .forEach(({item, idx})=>{
           const el = document.createElement('div');
           el.className = 'item';
+          el.dataset.list = 'avulsas';
+          el.dataset.idx = idx;
           el.innerHTML = `
             <div class="info">
               <div class="desc">${escapeHtml(item.descricao)}</div>
@@ -698,6 +806,8 @@
         .forEach(({item, idx})=>{
           const el = document.createElement('div');
           el.className = 'item';
+          el.dataset.list = 'parceladas';
+          el.dataset.idx = idx;
           el.innerHTML = `
             <div class="info">
               <div class="desc">${escapeHtml(item.descricao)}</div>
@@ -711,7 +821,16 @@
     }
 
     document.querySelectorAll('.del').forEach(btn=>{
-      btn.addEventListener('click', ()=> removeItem(btn.dataset.list, parseInt(btn.dataset.idx)));
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        removeItem(btn.dataset.list, parseInt(btn.dataset.idx));
+      });
+    });
+
+    document.querySelectorAll('.item').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        startEdit(el.dataset.list, parseInt(el.dataset.idx));
+      });
     });
   }
 
@@ -846,7 +965,18 @@
   });
 
   // Import
+  document.getElementById('btnChooseFile').addEventListener('click', ()=>{
+    document.getElementById('fileInput').click();
+  });
   document.getElementById('fileInput').addEventListener('change', (e)=>{
+    const nameEl = document.getElementById('fileNameDisplay');
+    if(e.target.files[0]){
+      nameEl.textContent = e.target.files[0].name;
+      nameEl.classList.add('has-file');
+    } else {
+      nameEl.textContent = 'Nenhum arquivo selecionado';
+      nameEl.classList.remove('has-file');
+    }
     const file = e.target.files[0];
     if(!file) return;
     const reader = new FileReader();

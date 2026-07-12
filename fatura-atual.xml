@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fatura mes="07" ano="2026" cartao="Bradesco">
-  <saldo_cartao>1087.40</saldo_cartao>
-  <saldo_atualizado_em>2026-07-08T23:43:56.667Z</saldo_atualizado_em>
+  <saldo_cartao>2625.43</saldo_cartao>
+  <saldo_atualizado_em>2026-07-12T13:01:25.723Z</saldo_atualizado_em>
   <compras_avulsas>
     <compra>
       <data>2026-07-05</data>
@@ -122,6 +122,46 @@
       <data>2026-07-08</data>
       <descricao>POSTO ANCORA</descricao>
       <valor>16.28</valor>
+    </compra>
+    <compra>
+      <data>2026-07-09</data>
+      <descricao>PICPAY*MUNDIALRECREI</descricao>
+      <valor>28.31</valor>
+    </compra>
+    <compra>
+      <data>2026-07-10</data>
+      <descricao>DROGASMIL</descricao>
+      <valor>22.49</valor>
+    </compra>
+    <compra>
+      <data>2026-07-10</data>
+      <descricao>SUPERMERCADOS GUA</descricao>
+      <valor>32.23</valor>
+    </compra>
+    <compra>
+      <data>2026-07-11</data>
+      <descricao>BANCA DO MILTON</descricao>
+      <valor>26.25</valor>
+    </compra>
+    <compra>
+      <data>2026-07-11</data>
+      <descricao>GOOGLE PREMIERE</descricao>
+      <valor>29.90</valor>
+    </compra>
+    <compra>
+      <data>2026-07-11</data>
+      <descricao>AMAZON PRIME CANAIS</descricao>
+      <valor>24.50</valor>
+    </compra>
+    <compra>
+      <data>2026-07-11</data>
+      <descricao>KOSKENKORVA</descricao>
+      <valor>57.50</valor>
+    </compra>
+    <compra>
+      <data>2026-07-12</data>
+      <descricao>GOOGLE ONE</descricao>
+      <valor>96.99</valor>
     </compra>
   </compras_avulsas>
   <compras_parceladas>
@@ -390,6 +430,13 @@
       <valor>219.90</valor>
       <parcela_atual>6</parcela_atual>
       <parcelas_totais>10</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-12</data>
+      <descricao>SAQUE PARCELADO (TEL VIVO)</descricao>
+      <valor>79.02</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
     </compra>
   </compras_parceladas>
 </fatura>

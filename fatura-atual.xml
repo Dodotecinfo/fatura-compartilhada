@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fatura mes="07" ano="2026" cartao="Bradesco">
+  <saldo_cartao>1087.40</saldo_cartao>
+  <saldo_atualizado_em>2026-07-08T23:43:56.667Z</saldo_atualizado_em>
+  <compras_avulsas>
+    <compra>
+      <data>2026-07-05</data>
+      <descricao>Banca de Jornal</descricao>
+      <valor>15.50</valor>
+    </compra>
+    <compra>
+      <data>2026-07-04</data>
+      <descricao>Mp*paramountplus</descricao>
+      <valor>24.43</valor>
+    </compra>
+    <compra>
+      <data>2026-07-04</data>
+      <descricao>Dl*uberrides</descricao>
+      <valor>14.54</valor>
+    </compra>
+    <compra>
+      <data>2026-07-03</data>
+      <descricao>Prezunic 709</descricao>
+      <valor>39.54</valor>
+    </compra>
+    <compra>
+      <data>2026-07-03</data>
+      <descricao>Auto posto pistao ltda</descricao>
+      <valor>7.49</valor>
+    </compra>
+    <compra>
+      <data>2026-07-03</data>
+      <descricao>Auto posto pistao ltda</descricao>
+      <valor>15.50</valor>
+    </compra>
+    <compra>
+      <data>2026-07-03</data>
+      <descricao>Dl*uberrrides</descricao>
+      <valor>78.17</valor>
+    </compra>
+    <compra>
+      <data>2026-07-01</data>
+      <descricao>PICPAY*MUNDIALRECREI</descricao>
+      <valor>68.27</valor>
+    </compra>
+    <compra>
+      <data>2026-07-01</data>
+      <descricao>VMT*MIKRO MAR</descricao>
+      <valor>25.29</valor>
+    </compra>
+    <compra>
+      <data>2026-07-01</data>
+      <descricao>MATE AMERICAS 2005</descricao>
+      <valor>26.40</valor>
+    </compra>
+    <compra>
+      <data>2026-06-30</data>
+      <descricao>MP*BENVINDOTINΤΑ</descricao>
+      <valor>48.80</valor>
+    </compra>
+    <compra>
+      <data>2026-06-30</data>
+      <descricao>BAZAR BENVINDO DE XER</descricao>
+      <valor>30.00</valor>
+    </compra>
+    <compra>
+      <data>2026-06-30</data>
+      <descricao>MP*BAR</descricao>
+      <valor>11.00</valor>
+    </compra>
+    <compra>
+      <data>2026-06-30</data>
+      <descricao>MP*BAR</descricao>
+      <valor>11.00</valor>
+    </compra>
+    <compra>
+      <data>2026-06-30</data>
+      <descricao>Supermarket Tanque</descricao>
+      <valor>62.31</valor>
+    </compra>
+    <compra>
+      <data>2026-06-30</data>
+      <descricao>Google YouTube</descricao>
+      <valor>21.90</valor>
+    </compra>
+    <compra>
+      <data>2026-06-26</data>
+      <descricao>PICPAY*MUNDIALRECREI</descricao>
+      <valor>16.85</valor>
+    </compra>
+    <compra>
+      <data>2026-07-06</data>
+      <descricao>J ALVES ARTIGOS</descricao>
+      <valor>39.50</valor>
+    </compra>
+    <compra>
+      <data>2026-07-06</data>
+      <descricao>HORTALIÇA DA ROC</descricao>
+      <valor>26.15</valor>
+    </compra>
+    <compra>
+      <data>2026-07-06</data>
+      <descricao>DROGASMIL</descricao>
+      <valor>16.72</valor>
+    </compra>
+    <compra>
+      <data>2026-07-06</data>
+      <descricao>PICPAY*MUNDIALRECREI</descricao>
+      <valor>20.89</valor>
+    </compra>
+    <compra>
+      <data>2026-07-08</data>
+      <descricao>PICPAY*MUNDIALRECREI</descricao>
+      <valor>14.34</valor>
+    </compra>
+    <compra>
+      <data>2026-07-08</data>
+      <descricao>ERIQUEHENRIQUE</descricao>
+      <valor>10.00</valor>
+    </compra>
+    <compra>
+      <data>2026-07-08</data>
+      <descricao>POSTO ANCORA</descricao>
+      <valor>16.28</valor>
+    </compra>
+  </compras_avulsas>
+  <compras_parceladas>
+    <compra>
+      <data>2026-07-05</data>
+      <descricao>Parc=103mp*douglasolive</descricao>
+      <valor>78.97</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-04</data>
+      <descricao>Parc=102mp*douglasolive</descricao>
+      <valor>92.47</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-03</data>
+      <descricao>Parc=102mp*douglasolive</descricao>
+      <valor>68.24</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-30</data>
+      <descricao>GRAN EDUCACAO 1/12</descricao>
+      <valor>39.90</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>12</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-25</data>
+      <descricao>ANUIDADE DIFERENCIADA 2/12</descricao>
+      <valor>57.00</valor>
+      <parcela_atual>3</parcela_atual>
+      <parcelas_totais>12</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-21</data>
+      <descricao>MP*DOUGLASOLIVEI 1/2</descricao>
+      <valor>60.73</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-21</data>
+      <descricao>MP*DOUGLASOLIVEI 1/2</descricao>
+      <valor>55.17</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-20</data>
+      <descricao>PIX PARC CARTAO CREDITO 1/2</descricao>
+      <valor>55.55</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-20</data>
+      <descricao>ENCARGOS SOBRE PARCELADO 1/2</descricao>
+      <valor>4.46</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-20</data>
+      <descricao>IOF DIARIO SOBRE PARCELAD 1/2</descricao>
+      <valor>0.09</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-20</data>
+      <descricao>IOF ADICIONAL SOBRE PARCE 1/2</descricao>
+      <valor>0.21</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-16</data>
+      <descricao>MP*DOUGLASOLIVEI 1/3</descricao>
+      <valor>115.15</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-14</data>
+      <descricao>MP*DOUGLASOLIVEI 1/2</descricao>
+      <valor>63.13</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-13</data>
+      <descricao>MP*QRMCDONALDS 1/2</descricao>
+      <valor>58.55</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-13</data>
+      <descricao>MP*DOUGLASOLIVEI 1/2</descricao>
+      <valor>83.52</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-11</data>
+      <descricao>PICPAY*TELEFONICA BR 1/2</descricao>
+      <valor>81.30</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-09</data>
+      <descricao>CEA BAR 530 ECPC 1/3</descricao>
+      <valor>86.66</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-08</data>
+      <descricao>DROGARIA APIACA LTDA M 1/3</descricao>
+      <valor>33.99</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-08</data>
+      <descricao>MERCADOLIVRE*MERCADOLIVRE 1/2</descricao>
+      <valor>44.95</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-05</data>
+      <descricao>MERCADOLIVRE*GANZA 1/3</descricao>
+      <valor>67.19</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-05</data>
+      <descricao>PICPAY*DOUGLAS RODRI 1/2</descricao>
+      <valor>77.33</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-05</data>
+      <descricao>MERCADOLIVRE*GANZA 2/3</descricao>
+      <valor>67.19</valor>
+      <parcela_atual>3</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-02</data>
+      <descricao>MP*DOUGLASOLIVEI 1/2</descricao>
+      <valor>53.17</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-01</data>
+      <descricao>MP*DOUGLASOLIVEI 1/2</descricao>
+      <valor>107.24</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-06-01</data>
+      <descricao>PICPAY*DOUGLAS RODRI 1/2</descricao>
+      <valor>79.99</valor>
+      <parcela_atual>2</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-05-12</data>
+      <descricao>PARC.FACIL 2/12</descricao>
+      <valor>108.41</valor>
+      <parcela_atual>3</parcela_atual>
+      <parcelas_totais>12</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-05-12</data>
+      <descricao>ENCARGOS SOBRE PARCELADO 2/12</descricao>
+      <valor>200.06</valor>
+      <parcela_atual>3</parcela_atual>
+      <parcelas_totais>12</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-05-12</data>
+      <descricao>IOF DIARIO SOBRE PARCELAD 2/12</descricao>
+      <valor>0.55</valor>
+      <parcela_atual>3</parcela_atual>
+      <parcelas_totais>12</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-05-12</data>
+      <descricao>IOF ADICIONAL SOBRE PARCE 2/12</descricao>
+      <valor>0.67</valor>
+      <parcela_atual>3</parcela_atual>
+      <parcelas_totais>12</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-05-01</data>
+      <descricao>PICPAY*DOUGLAS RODRI 2/3</descricao>
+      <valor>134.68</valor>
+      <parcela_atual>3</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-04-07</data>
+      <descricao>MASTERSON MAT DE CONST 3/6</descricao>
+      <valor>67.47</valor>
+      <parcela_atual>4</parcela_atual>
+      <parcelas_totais>6</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-04-04</data>
+      <descricao>Supermarket Tanque 3/4</descricao>
+      <valor>108.12</valor>
+      <parcela_atual>4</parcela_atual>
+      <parcelas_totais>4</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-04-04</data>
+      <descricao>ENCARGOS SOBRE PARCELADO 3/4</descricao>
+      <valor>13.50</valor>
+      <parcela_atual>4</parcela_atual>
+      <parcelas_totais>4</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-04-04</data>
+      <descricao>IOF DIARIO SOBRE PARCELAD 3/4</descricao>
+      <valor>0.87</valor>
+      <parcela_atual>4</parcela_atual>
+      <parcelas_totais>4</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-04-04</data>
+      <descricao>IOF ADICIONAL SOBRE PARCE 3/4</descricao>
+      <valor>0.43</valor>
+      <parcela_atual>4</parcela_atual>
+      <parcelas_totais>4</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-04-03</data>
+      <descricao>MERCADOLIVRE*MERCADOLI 3/4</descricao>
+      <valor>62.62</valor>
+      <parcela_atual>4</parcela_atual>
+      <parcelas_totais>4</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-04-01</data>
+      <descricao>MASTERSON MAT DE CONST 3/6</descricao>
+      <valor>67.47</valor>
+      <parcela_atual>4</parcela_atual>
+      <parcelas_totais>6</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-02-20</data>
+      <descricao>MERCADOLIVRE*MERCADOLI 5/10</descricao>
+      <valor>219.90</valor>
+      <parcela_atual>6</parcela_atual>
+      <parcelas_totais>10</parcelas_totais>
+    </compra>
+  </compras_parceladas>
+</fatura>

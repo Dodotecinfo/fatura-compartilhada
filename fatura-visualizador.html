@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Fatura Compartilhada — Visualizador</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #10131A;
+    --surface: #1A1F29;
+    --surface-2: #212836;
+    --line: #2A3140;
+    --red: #E4002B;
+    --red-dim: #7A1425;
+    --green: #2FBF8F;
+    --text: #E9ECF1;
+    --muted: #8B93A1;
+    --mono: 'IBM Plex Mono', monospace;
+    --display: 'Space Grotesk', sans-serif;
+    --body: 'Inter', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{
+    margin:0; padding:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #app{
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+  }
+
+  header{ padding: 20px 20px 0 20px; }
+  header .eyebrow{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  header h1{
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 700;
+    margin: 4px 0 16px 0;
+    letter-spacing: -0.01em;
+  }
+  .badge-viewer{
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin-bottom: 12px;
+  }
+
+  .tabs{
+    display: flex;
+    gap: 4px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab{
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 12px 4px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .tab.active{ color: var(--text); border-bottom-color: var(--red); }
+
+  main{ flex: 1; padding: 18px 20px 60px 20px; }
+  .view{ display: none; }
+  .view.active{ display: block; }
+
+  .status-bar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--muted);
+  }
+  .status-bar #btnRefresh{
+    background: none;
+    border: none;
+    color: var(--green);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 4px;
+    white-space: nowrap;
+  }
+
+  .saldo-card{
+    background: var(--surface);
+    border: 1px solid var(--red-dim);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .saldo-label{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .saldo-value{
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--red);
+  }
+  .saldo-updated{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--green);
+    margin-top: 6px;
+    display: none;
+  }
+  .saldo-updated.show{ display: block; }
+
+  .ledger{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .ledger .cell{ background: var(--surface); padding: 12px 10px; text-align: center; }
+  .ledger .cell .label{
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .ledger .cell .value{ font-family: var(--mono); font-size: 15px; font-weight: 600; }
+  .ledger .cell.total .value{ color: var(--red); }
+
+  .section-title{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 22px 0 10px 0;
+  }
+  .section-title h2{
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .section-title .badge{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface-2);
+    border-radius: 20px;
+    padding: 2px 9px;
+  }
+
+  .item{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .item .info{ min-width: 0; flex: 1; }
+  .item .desc{
+    font-size: 13.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .item .meta{ font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .item .parcela-tag{ color: var(--green); }
+  .item .valor{ font-family: var(--mono); font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+  .empty{
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 30px 10px;
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+  }
+
+  .hint{ font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; }
+
+  .btn{
+    width: 100%;
+    padding: 13px;
+    border-radius: 9px;
+    border: none;
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .btn-primary{ background: var(--red); color: white; }
+  .btn-secondary{ background: var(--surface-2); color: var(--text); border: 1px solid var(--line); margin-top: 10px; }
+
+  .file-picker{ display: flex; flex-direction: column; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+  .file-picker .btn{ width: 100%; }
+  .file-name{ font-family: var(--mono); font-size: 11.5px; color: var(--muted); padding: 2px 2px; }
+  .file-name.has-file{ color: var(--green); }
+
+  .toast{
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease, transform .25s ease;
+    max-width: 90%;
+    text-align: center;
+    z-index: 50;
+  }
+  .toast.show{ opacity: 1; transform: translateX(-50%) translateY(-4px); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <span class="eyebrow">Fatura Bradesco &middot; Compartilhada</span>
+    <h1>Fatura Compartilhada</h1>
+    <span class="badge-viewer">👁 Somente visualização</span>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-view="ver">Ver fatura</button>
+    <button class="tab" data-view="io">Importar</button>
+  </div>
+
+  <main>
+
+    <!-- VER FATURA -->
+    <section class="view active" id="view-ver">
+      <div class="status-bar">
+        <span id="statusText">Carregando fatura...</span>
+        <button type="button" id="btnRefresh">🔄 Atualizar</button>
+      </div>
+
+      <div class="saldo-card">
+        <div class="saldo-label">Saldo do cartão de crédito</div>
+        <div class="saldo-value" id="saldoValue">—</div>
+        <div class="saldo-updated" id="saldoAtualizadoEm"></div>
+      </div>
+
+      <div class="ledger">
+        <div class="cell">
+          <span class="label">Avulsas</span>
+          <span class="value" id="totalAvulsas">R$ 0,00</span>
+        </div>
+        <div class="cell">
+          <span class="label">Parceladas</span>
+          <span class="value" id="totalParceladas">R$ 0,00</span>
+        </div>
+        <div class="cell total">
+          <span class="label">Total mês</span>
+          <span class="value" id="totalGeral">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <h2>Compras avulsas</h2>
+        <span class="badge" id="countAvulsas">0</span>
+      </div>
+      <div id="listAvulsas"></div>
+
+      <div class="section-title">
+        <h2>Compras parceladas</h2>
+        <span class="badge" id="countParceladas">0</span>
+      </div>
+      <div id="listParceladas"></div>
+    </section>
+
+    <!-- IMPORTAR -->
+    <section class="view" id="view-io">
+      <div class="section-title" style="margin-top:0;">
+        <h2>Importar manualmente</h2>
+      </div>
+      <p class="hint">A fatura já é carregada automaticamente sozinha (aba "Ver fatura"). Use isto só se a atualização automática não funcionar, ou pra abrir um arquivo avulso.</p>
+
+      <div class="file-picker">
+        <input type="file" id="fileInput" accept=".xml,text/xml" style="display:none;">
+        <button type="button" class="btn btn-secondary" id="btnChooseFile">📄 Escolher arquivo XML</button>
+        <span class="file-name" id="fileNameDisplay">Nenhum arquivo selecionado</span>
+      </div>
+
+      <div class="section-title">
+        <h2>Backup</h2>
+      </div>
+      <p class="hint">Baixa uma cópia em Excel da fatura importada, só para guardar ou conferir — não serve para importar de volta no app.</p>
+      <button class="btn btn-secondary" id="btnExportExcel">Baixar como planilha Excel (.xlsx)</button>
+
+      <div class="section-title">
+        <h2>Limpar</h2>
+      </div>
+      <button class="btn btn-secondary" id="btnClear">Limpar dados importados</button>
+    </section>
+
+  </main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'fatura_visualizador_v1';
+  let data = { mes: '', ano: '', cartao: '', saldo_cartao: null, saldo_atualizado_em: null, avulsas: [], parceladas: [] };
+
+  function loadData(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) data = JSON.parse(raw);
+    }catch(e){}
+    if(!data.avulsas) data.avulsas = [];
+    if(!data.parceladas) data.parceladas = [];
+  }
+  function saveData(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function fmtBRL(v){
+    return v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  }
+  function fmtDate(iso){
+    if(!iso) return '';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  function fmtDataHora(iso){
+    if(!iso) return '';
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const min = String(d.getMinutes()).padStart(2,'0');
+    return `Atualizado em ${dd}/${mm}/${yyyy} às ${hh}:${min}`;
+  }
+
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(()=> t.classList.remove('show'), 2200);
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Tabs
+  const tabs = document.querySelectorAll('.tab');
+  const views = document.querySelectorAll('.view');
+  tabs.forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      tabs.forEach(t=>t.classList.remove('active'));
+      views.forEach(v=>v.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('view-' + tab.dataset.view).classList.add('active');
+    });
+  });
+
+  function render(){
+    const totA = data.avulsas.reduce((s,i)=>s+i.valor,0);
+    const totP = data.parceladas.reduce((s,i)=>s+i.valor,0);
+    document.getElementById('totalAvulsas').textContent = fmtBRL(totA);
+    document.getElementById('totalParceladas').textContent = fmtBRL(totP);
+    document.getElementById('totalGeral').textContent = fmtBRL(totA+totP);
+    document.getElementById('countAvulsas').textContent = data.avulsas.length;
+    document.getElementById('countParceladas').textContent = data.parceladas.length;
+
+    const saldoEl = document.getElementById('saldoValue');
+    saldoEl.textContent = (data.saldo_cartao !== null && data.saldo_cartao !== undefined)
+      ? fmtBRL(Number(data.saldo_cartao)) : '—';
+    const updEl = document.getElementById('saldoAtualizadoEm');
+    const txt = fmtDataHora(data.saldo_atualizado_em);
+    updEl.textContent = txt;
+    updEl.classList.toggle('show', !!txt);
+
+    const listA = document.getElementById('listAvulsas');
+    listA.innerHTML = '';
+    if(data.avulsas.length === 0){
+      listA.innerHTML = '<div class="empty">Nenhuma compra avulsa nesta fatura.</div>';
+    } else {
+      data.avulsas
+        .slice()
+        .sort((a,b)=> a.data < b.data ? 1 : -1)
+        .forEach(item=>{
+          const el = document.createElement('div');
+          el.className = 'item';
+          el.innerHTML = `
+            <div class="info">
+              <div class="desc">${escapeHtml(item.descricao)}</div>
+              <div class="meta">${fmtDate(item.data)}</div>
+            </div>
+            <div class="valor">${fmtBRL(item.valor)}</div>
+          `;
+          listA.appendChild(el);
+        });
+    }
+
+    const listP = document.getElementById('listParceladas');
+    listP.innerHTML = '';
+    if(data.parceladas.length === 0){
+      listP.innerHTML = '<div class="empty">Nenhuma compra parcelada nesta fatura.</div>';
+    } else {
+      data.parceladas
+        .slice()
+        .sort((a,b)=> a.data < b.data ? 1 : -1)
+        .forEach(item=>{
+          const el = document.createElement('div');
+          el.className = 'item';
+          el.innerHTML = `
+            <div class="info">
+              <div class="desc">${escapeHtml(item.descricao)}</div>
+              <div class="meta">${fmtDate(item.data)} &middot; <span class="parcela-tag">${item.parcela_atual}/${item.parcelas_totais}</span></div>
+            </div>
+            <div class="valor">${fmtBRL(item.valor)}</div>
+          `;
+          listP.appendChild(el);
+        });
+    }
+  }
+
+  // Corrige o artefato de aspas que o Excel injeta ao copiar uma célula
+  // multi-linha (formato CSV: envolve tudo em "..." e duplica aspas internas "" -> ")
+  function sanitizeExcelClipboard(text){
+    let t = text.trim();
+    if(t.startsWith('"') && t.endsWith('"') && t.slice(1,2) === '<'){
+      t = t.slice(1, -1);
+      t = t.replace(/""/g, '"');
+    }
+    return t;
+  }
+
+  // URL onde a fatura publicada fica disponível (mesmo repositório/pasta do visualizador)
+  const XML_URL = 'fatura-atual.xml';
+
+  // Aplica um texto XML (de fetch ou de arquivo importado) aos dados do app.
+  // Retorna { ok, avulsas, parceladas } ou lança erro.
+  function applyXmlText(xmlText){
+    const clean = sanitizeExcelClipboard(xmlText);
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(clean, 'application/xml');
+
+    const errorNode = xmlDoc.querySelector('parsererror');
+    if(errorNode) throw new Error('XML inválido');
+
+    const saldoNode = xmlDoc.querySelector('fatura > saldo_cartao');
+    const saldoVal = saldoNode ? parseFloat(saldoNode.textContent) : null;
+    const saldoDataNode = xmlDoc.querySelector('fatura > saldo_atualizado_em');
+    const saldoData = saldoDataNode ? saldoDataNode.textContent : null;
+
+    const avulsas = [];
+    xmlDoc.querySelectorAll('compras_avulsas > compra').forEach(node=>{
+      avulsas.push({
+        data: node.querySelector('data')?.textContent || '',
+        descricao: node.querySelector('descricao')?.textContent || '',
+        valor: parseFloat(node.querySelector('valor')?.textContent || '0')
+      });
+    });
+
+    const parceladas = [];
+    xmlDoc.querySelectorAll('compras_parceladas > compra').forEach(node=>{
+      parceladas.push({
+        data: node.querySelector('data')?.textContent || '',
+        descricao: node.querySelector('descricao')?.textContent || '',
+        valor: parseFloat(node.querySelector('valor')?.textContent || '0'),
+        parcela_atual: parseInt(node.querySelector('parcela_atual')?.textContent || '1'),
+        parcelas_totais: parseInt(node.querySelector('parcelas_totais')?.textContent || '1')
+      });
+    });
+
+    data.avulsas = avulsas;
+    data.parceladas = parceladas;
+    data.saldo_cartao = (saldoVal !== null && !isNaN(saldoVal)) ? saldoVal : null;
+    data.saldo_atualizado_em = data.saldo_cartao !== null ? saldoData : null;
+    saveData();
+    render();
+    return { avulsas: avulsas.length, parceladas: parceladas.length };
+  }
+
+  function fmtHora(d){
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  async function autoLoadFatura(showToast){
+    const statusEl = document.getElementById('statusText');
+    statusEl.textContent = 'Verificando atualização...';
+    try{
+      const resp = await fetch(XML_URL + '?t=' + Date.now(), { cache: 'no-store' });
+      if(!resp.ok) throw new Error('Arquivo não encontrado (' + resp.status + ')');
+      const text = await resp.text();
+      const result = applyXmlText(text);
+      statusEl.textContent = 'Atualizado automaticamente às ' + fmtHora(new Date());
+      if(showToast) toast(`Fatura atualizada: ${result.avulsas} avulsas, ${result.parceladas} parceladas.`);
+    }catch(err){
+      const temDadosLocais = data.avulsas.length > 0 || data.parceladas.length > 0;
+      statusEl.textContent = temDadosLocais
+        ? 'Sem conexão com a fatura publicada — mostrando última versão salva.'
+        : 'Nenhuma fatura publicada encontrada ainda.';
+      if(showToast) toast('Não foi possível buscar a fatura agora.');
+    }
+  }
+
+  document.getElementById('btnRefresh').addEventListener('click', ()=> autoLoadFatura(true));
+
+  // Import manual (fallback)
+  document.getElementById('btnChooseFile').addEventListener('click', ()=>{
+    document.getElementById('fileInput').click();
+  });
+  document.getElementById('fileInput').addEventListener('change', (e)=>{
+    const nameEl = document.getElementById('fileNameDisplay');
+    const file = e.target.files[0];
+    if(!file) return;
+    nameEl.textContent = file.name;
+    nameEl.classList.add('has-file');
+
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const result = applyXmlText(ev.target.result);
+
+        tabs.forEach(t=>t.classList.remove('active'));
+        views.forEach(v=>v.classList.remove('active'));
+        document.querySelector('[data-view="ver"]').classList.add('active');
+        document.getElementById('view-ver').classList.add('active');
+
+        document.getElementById('statusText').textContent = 'Carregado manualmente às ' + fmtHora(new Date());
+        toast(`Fatura importada: ${result.avulsas} avulsas, ${result.parceladas} parceladas.`);
+      }catch(err){
+        toast('Não foi possível ler o XML. Verifique o arquivo.');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // Export Excel (backup, não serve para reimportar)
+  document.getElementById('btnExportExcel').addEventListener('click', ()=>{
+    if(typeof XLSX === 'undefined'){
+      toast('Não foi possível carregar o gerador de planilha. Verifique sua conexão.');
+      return;
+    }
+    const now = new Date();
+    const mes = String(now.getMonth()+1).padStart(2,'0');
+    const ano = String(now.getFullYear());
+    const totA = data.avulsas.reduce((s,i)=>s+i.valor,0);
+    const totP = data.parceladas.reduce((s,i)=>s+i.valor,0);
+
+    const resumo = [
+      ['Resumo da fatura'],
+      [],
+      ['Saldo do cartão (R$)', data.saldo_cartao !== null && data.saldo_cartao !== undefined ? data.saldo_cartao : ''],
+      ['Atualizado em', fmtDataHora(data.saldo_atualizado_em) ? fmtDataHora(data.saldo_atualizado_em).replace('Atualizado em ','') : ''],
+      [],
+      ['Total avulsas (R$)', Number(totA.toFixed(2))],
+      ['Total parceladas (R$)', Number(totP.toFixed(2))],
+      ['Total geral (R$)', Number((totA+totP).toFixed(2))],
+    ];
+    const avulsasSheet = [
+      ['Data', 'Descrição', 'Valor (R$)'],
+      ...data.avulsas.slice().sort((a,b)=> a.data < b.data ? 1 : -1).map(i => [i.data, i.descricao, i.valor])
+    ];
+    const parceladasSheet = [
+      ['Data', 'Descrição', 'Valor da Parcela (R$)', 'Parcela Atual', 'Parcelas Totais'],
+      ...data.parceladas.slice().sort((a,b)=> a.data < b.data ? 1 : -1).map(i => [i.data, i.descricao, i.valor, i.parcela_atual, i.parcelas_totais])
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumo), 'Resumo');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(avulsasSheet), 'Avulsas');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(parceladasSheet), 'Parceladas');
+
+    try{
+      XLSX.writeFile(wb, `fatura-${ano}-${mes}.xlsx`);
+      toast('Planilha Excel baixada.');
+    }catch(e){
+      toast('Não foi possível baixar a planilha.');
+    }
+  });
+
+  document.getElementById('btnClear').addEventListener('click', ()=>{
+    if(confirm('Apagar a fatura importada deste aparelho?')){
+      data = { mes:'', ano:'', cartao:'', saldo_cartao: null, saldo_atualizado_em: null, avulsas: [], parceladas: [] };
+      saveData();
+      render();
+      toast('Dados limpos.');
+    }
+  });
+
+  loadData();
+  render();
+  autoLoadFatura(false);
+})();
+</script>
+</body>
+</html>

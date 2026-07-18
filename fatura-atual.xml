@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fatura mes="07" ano="2026" cartao="Bradesco">
-  <saldo_cartao>2625.43</saldo_cartao>
-  <saldo_atualizado_em>2026-07-12T13:01:25.723Z</saldo_atualizado_em>
+  <saldo_cartao>1890.35</saldo_cartao>
+  <saldo_atualizado_em>2026-07-18T00:08:03.244Z</saldo_atualizado_em>
   <compras_avulsas>
     <compra>
       <data>2026-07-05</data>
@@ -154,7 +154,7 @@
       <valor>24.50</valor>
     </compra>
     <compra>
-      <data>2026-07-11</data>
+      <data>2026-07-12</data>
       <descricao>KOSKENKORVA</descricao>
       <valor>57.50</valor>
     </compra>
@@ -162,6 +162,76 @@
       <data>2026-07-12</data>
       <descricao>GOOGLE ONE</descricao>
       <valor>96.99</valor>
+    </compra>
+    <compra>
+      <data>2026-07-12</data>
+      <descricao>GOOGLE ONE</descricao>
+      <valor>9.99</valor>
+    </compra>
+    <compra>
+      <data>2026-07-12</data>
+      <descricao>SACOLAOFELIPE</descricao>
+      <valor>16.70</valor>
+    </compra>
+    <compra>
+      <data>2026-07-12</data>
+      <descricao>HORTALICA DA ROC</descricao>
+      <valor>5.06</valor>
+    </compra>
+    <compra>
+      <data>2026-07-13</data>
+      <descricao>PREZUNIC 709</descricao>
+      <valor>52.92</valor>
+    </compra>
+    <compra>
+      <data>2026-07-13</data>
+      <descricao>NETFLIX</descricao>
+      <valor>20.90</valor>
+    </compra>
+    <compra>
+      <data>2026-07-14</data>
+      <descricao>SUPERMARKET TANQUE</descricao>
+      <valor>7.09</valor>
+    </compra>
+    <compra>
+      <data>2026-07-14</data>
+      <descricao>PICPAY*MUNDIALRECREI</descricao>
+      <valor>23.00</valor>
+    </compra>
+    <compra>
+      <data>2026-07-15</data>
+      <descricao>AMAZON PRIME CANAIS</descricao>
+      <valor>29.90</valor>
+    </compra>
+    <compra>
+      <data>2026-07-15</data>
+      <descricao>MP*DOUGLASOLIVEI</descricao>
+      <valor>82.24</valor>
+    </compra>
+    <compra>
+      <data>2026-07-16</data>
+      <descricao>DL*UBERRIDES</descricao>
+      <valor>10.93</valor>
+    </compra>
+    <compra>
+      <data>2026-07-16</data>
+      <descricao>POSTO ANCORA</descricao>
+      <valor>32.56</valor>
+    </compra>
+    <compra>
+      <data>2026-07-17</data>
+      <descricao>IFD*IFOOD</descricao>
+      <valor>7.95</valor>
+    </compra>
+    <compra>
+      <data>2026-07-17</data>
+      <descricao>PICPAY*MUNDIALRECREI</descricao>
+      <valor>27.56</valor>
+    </compra>
+    <compra>
+      <data>2026-07-17</data>
+      <descricao>SAQUE A VISTA</descricao>
+      <valor>150.00</valor>
     </compra>
   </compras_avulsas>
   <compras_parceladas>
@@ -437,6 +507,41 @@
       <valor>79.02</valor>
       <parcela_atual>1</parcela_atual>
       <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-12</data>
+      <descricao>PIX PARC CARTAO CREDITO</descricao>
+      <valor>69.90</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-12</data>
+      <descricao>PIX PARC CARTAO CREDITO ENCARGO</descricao>
+      <valor>8.68</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-12</data>
+      <descricao>PIX PARC CARTAO CREDITO IOF</descricao>
+      <valor>0.17</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-12</data>
+      <descricao>PIX PARC CARTAO CREDITO ENCARGO IOF ADICIONAL</descricao>
+      <valor>0.27</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-17</data>
+      <descricao>SAQUE PARCELADO</descricao>
+      <valor>56.15</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
     </compra>
   </compras_parceladas>
 </fatura>

@@ -302,6 +302,28 @@
     background: var(--red-dim);
   }
 
+  .mini-toggle{
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .mini-toggle button{
+    flex: 1;
+    padding: 7px 6px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .mini-toggle button.sel{
+    border-color: var(--green);
+    color: var(--text);
+    background: rgba(47,191,143,0.12);
+  }
+
   .field input[readonly]{
     color: var(--green);
     font-weight: 600;
@@ -410,7 +432,7 @@
         <div class="saldo-label">Saldo do cartão de crédito</div>
         <div class="saldo-input-wrap">
           <span class="saldo-prefix">R$</span>
-          <input type="number" id="saldoCartao" step="0.01" placeholder="0,00" inputmode="decimal">
+          <input type="text" id="saldoCartao" placeholder="0,00" inputmode="decimal">
         </div>
         <div class="saldo-updated" id="saldoAtualizadoEm"></div>
       </div>
@@ -465,9 +487,14 @@
       </div>
 
       <div class="parcela-fields" id="parcelaFields">
-        <div class="field mono">
+        <div class="mini-toggle" id="modoValorToggle">
+          <button type="button" class="sel" data-modo="total">Tenho o valor total</button>
+          <button type="button" data-modo="parcela">Sei o valor da parcela</button>
+        </div>
+
+        <div class="field mono" id="fieldValorTotal">
           <label>Valor total da compra (R$)</label>
-          <input type="number" id="fValorTotalCompra" step="0.01" placeholder="0.00" inputmode="decimal">
+          <input type="text" id="fValorTotalCompra" inputmode="decimal" placeholder="0,00">
         </div>
         <div class="row2">
           <div class="field mono">
@@ -480,8 +507,8 @@
           </div>
         </div>
         <div class="field mono">
-          <label>Valor desta parcela (calculado)</label>
-          <input type="text" id="fValorParcelaCalc" readonly placeholder="R$ 0,00">
+          <label id="labelValorParcela">Valor desta parcela (calculado)</label>
+          <input type="text" id="fValorParcelaCalc" readonly placeholder="0,00" inputmode="decimal">
         </div>
       </div>
 
@@ -544,10 +571,40 @@
     el.classList.toggle('show', !!txt);
   }
 
+  // Aceita "2.625,43", "2625,43" ou "2625.43" e devolve um número (float)
+  function parseBRLInput(str){
+    if(str === null || str === undefined) return NaN;
+    let s = String(str).trim();
+    if(s === '') return NaN;
+    if(s.includes(',')){
+      s = s.replace(/\./g, '').replace(',', '.');
+    }
+    return parseFloat(s);
+  }
+
+  // Formata um número para exibição no padrão brasileiro (sem R$, só o número)
+  function formatBRLInput(num){
+    if(num === null || num === undefined || isNaN(num)) return '';
+    return Number(num).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
   document.getElementById('saldoCartao').addEventListener('change', ()=>{
-    const v = document.getElementById('saldoCartao').value;
-    data.saldo_cartao = v === '' ? null : parseFloat(v);
-    data.saldo_atualizado_em = v === '' ? null : new Date().toISOString();
+    const input = document.getElementById('saldoCartao');
+    const v = input.value.trim();
+    if(v === ''){
+      data.saldo_cartao = null;
+      data.saldo_atualizado_em = null;
+    } else {
+      const parsed = parseBRLInput(v);
+      if(isNaN(parsed)){
+        toast('Valor inválido. Use o formato 2.625,43.');
+        input.value = formatBRLInput(data.saldo_cartao);
+        return;
+      }
+      data.saldo_cartao = parsed;
+      data.saldo_atualizado_em = new Date().toISOString();
+      input.value = formatBRLInput(parsed);
+    }
     renderSaldoAtualizado();
     saveData();
   });
@@ -560,7 +617,7 @@
     if(!data.avulsas) data.avulsas = [];
     if(!data.parceladas) data.parceladas = [];
     if(data.saldo_cartao !== null && data.saldo_cartao !== undefined){
-      document.getElementById('saldoCartao').value = data.saldo_cartao;
+      document.getElementById('saldoCartao').value = formatBRLInput(data.saldo_cartao);
     }
     renderSaldoAtualizado();
   }
@@ -600,11 +657,14 @@
 
   // Type toggle on Lançar
   let currentType = 'avulsa';
+  let modoValor = 'total'; // 'total' ou 'parcela'
   let editingList = null;
   let editingIndex = null;
   const typeButtons = document.querySelectorAll('.type-toggle button');
   const parcelaFields = document.getElementById('parcelaFields');
   const fieldValorAvulsa = document.getElementById('fieldValorAvulsa');
+  const modoButtons = document.querySelectorAll('#modoValorToggle button');
+  const fieldValorTotal = document.getElementById('fieldValorTotal');
 
   function selectType(type){
     currentType = type;
@@ -618,6 +678,45 @@
     btn.addEventListener('click', ()=> selectType(btn.dataset.type));
   });
 
+  function selectModoValor(modo){
+    modoValor = modo;
+    modoButtons.forEach(b=> b.classList.toggle('sel', b.dataset.modo === modo));
+    const out = document.getElementById('fValorParcelaCalc');
+    const label = document.getElementById('labelValorParcela');
+
+    if(modo === 'total'){
+      fieldValorTotal.style.display = 'block';
+      out.readOnly = true;
+      out.placeholder = '0,00';
+      label.textContent = 'Valor desta parcela (calculado)';
+      calcValorParcela();
+    } else {
+      fieldValorTotal.style.display = 'none';
+      out.readOnly = false;
+      out.placeholder = 'Digite o valor da parcela';
+      label.textContent = 'Valor desta parcela';
+      out.value = '';
+      out.dataset.raw = '';
+    }
+  }
+  modoButtons.forEach(btn=>{
+    btn.addEventListener('click', ()=> selectModoValor(btn.dataset.modo));
+  });
+
+  document.getElementById('fValorParcelaCalc').addEventListener('input', ()=>{
+    if(modoValor !== 'parcela') return;
+    const out = document.getElementById('fValorParcelaCalc');
+    const parsed = parseBRLInput(out.value);
+    out.dataset.raw = isNaN(parsed) ? '' : parsed.toFixed(2);
+  });
+  document.getElementById('fValorParcelaCalc').addEventListener('blur', ()=>{
+    if(modoValor !== 'parcela') return;
+    const out = document.getElementById('fValorParcelaCalc');
+    if(out.dataset.raw){
+      out.value = formatBRLInput(parseFloat(out.dataset.raw));
+    }
+  });
+
   function clearForm(){
     document.getElementById('fData').value = '';
     document.getElementById('fDesc').value = '';
@@ -627,6 +726,7 @@
     document.getElementById('fParcelaTotal').value = '';
     document.getElementById('fValorParcelaCalc').value = '';
     document.getElementById('fValorParcelaCalc').dataset.raw = '';
+    selectModoValor('total');
   }
 
   function setEditMode(isEditing){
@@ -653,11 +753,14 @@
       document.getElementById('fValor').value = item.valor;
     } else {
       selectType('parcelada');
-      const totalEstimado = Math.round(item.valor * item.parcelas_totais * 100) / 100;
-      document.getElementById('fValorTotalCompra').value = totalEstimado;
+      // Edita usando o valor exato já conhecido da parcela, sem recalcular a partir do total
+      // (evita diferença de centavos por arredondamento).
+      selectModoValor('parcela');
       document.getElementById('fParcelaAtual').value = item.parcela_atual;
       document.getElementById('fParcelaTotal').value = item.parcelas_totais;
-      calcValorParcela();
+      const out = document.getElementById('fValorParcelaCalc');
+      out.value = formatBRLInput(item.valor);
+      out.dataset.raw = item.valor.toFixed(2);
     }
 
     setEditMode(true);
@@ -677,12 +780,13 @@
   });
 
   function calcValorParcela(){
-    const total = parseFloat(document.getElementById('fValorTotalCompra').value);
+    if(modoValor !== 'total') return;
+    const total = parseBRLInput(document.getElementById('fValorTotalCompra').value);
     const qtd = parseInt(document.getElementById('fParcelaTotal').value);
     const out = document.getElementById('fValorParcelaCalc');
     if(!isNaN(total) && qtd > 0){
       const porParcela = Math.round((total / qtd) * 100) / 100;
-      out.value = porParcela.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+      out.value = formatBRLInput(porParcela);
       out.dataset.raw = porParcela.toFixed(2);
     } else {
       out.value = '';
@@ -712,13 +816,15 @@
         toast('Lançamento adicionado.');
       }
     } else {
-      const totalCompra = parseFloat(document.getElementById('fValorTotalCompra').value);
       const atual = parseInt(document.getElementById('fParcelaAtual').value) || 1;
       const totalParcelas = parseInt(document.getElementById('fParcelaTotal').value);
       const raw = document.getElementById('fValorParcelaCalc').dataset.raw;
 
-      if(!dataVal || !desc || isNaN(totalCompra) || !totalParcelas || !raw){
-        toast('Preencha data, descrição, valor total e total de parcelas.');
+      if(!dataVal || !desc || !totalParcelas || !raw){
+        const msg = modoValor === 'total'
+          ? 'Preencha data, descrição, valor total e total de parcelas.'
+          : 'Preencha data, descrição, valor da parcela e total de parcelas.';
+        toast(msg);
         return;
       }
 
@@ -732,7 +838,7 @@
         toast('Lançamento atualizado.');
       } else {
         data.parceladas.push(novoItem);
-        toast(`Lançamento adicionado: ${totalParcelas}x de ${parseFloat(raw).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}.`);
+        toast(`Lançamento adicionado: ${totalParcelas}x de ${formatBRLInput(parseFloat(raw))}.`);
       }
     }
 
@@ -1038,7 +1144,7 @@
         data.parceladas = parceladas;
         data.saldo_cartao = (saldoVal !== null && !isNaN(saldoVal)) ? saldoVal : null;
         data.saldo_atualizado_em = data.saldo_cartao !== null ? saldoData : null;
-        document.getElementById('saldoCartao').value = data.saldo_cartao !== null ? data.saldo_cartao : '';
+        document.getElementById('saldoCartao').value = data.saldo_cartao !== null ? formatBRLInput(data.saldo_cartao) : '';
         renderSaldoAtualizado();
         saveData();
         render();

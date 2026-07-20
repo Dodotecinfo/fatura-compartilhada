@@ -91,13 +91,87 @@
   .view{ display: none; }
   .view.active{ display: block; }
 
+  /* Navegação por mês */
+  .month-nav{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .nav-arrow{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .nav-arrow:disabled{ opacity: 0.3; cursor: default; }
+  .month-nav-center{ text-align: center; flex: 1; }
+  .month-label{
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+  .month-badge{
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 2px;
+    min-height: 14px;
+  }
+  .month-badge.atual{ color: var(--green); }
+  .month-badge.arquivado{ color: var(--muted); }
+  .month-badge.projetado{ color: var(--red); }
+  .month-badge.vazio{ color: var(--muted); }
+
+  .top-cards{
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .fechamento-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .fechamento-card input[type="date"]{
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 4px 2px;
+    outline: none;
+    width: 100%;
+    color-scheme: dark;
+  }
+  .fechamento-card input[type="date"]:focus{ border-bottom-color: var(--red); }
+  .fechamento-readout{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .fechamento-readout.set{ color: var(--green); font-weight: 600; }
+
   /* Saldo do cartão */
   .saldo-card{
     background: var(--surface);
     border: 1px solid var(--red-dim);
     border-radius: 10px;
     padding: 14px 16px;
-    margin-bottom: 16px;
   }
   .saldo-label{
     font-family: var(--mono);
@@ -230,6 +304,10 @@
   }
   .item .parcela-tag{
     color: var(--green);
+  }
+  .item .parcela-tag.ultima{
+    color: var(--red);
+    font-weight: 700;
   }
   .item .valor{
     font-family: var(--mono);
@@ -428,13 +506,29 @@
 
     <!-- VER FATURA -->
     <section class="view active" id="view-ver">
-      <div class="saldo-card">
-        <div class="saldo-label">Saldo do cartão de crédito</div>
-        <div class="saldo-input-wrap">
-          <span class="saldo-prefix">R$</span>
-          <input type="text" id="saldoCartao" placeholder="0,00" inputmode="decimal">
+      <div class="month-nav">
+        <button type="button" id="btnPrevMonth" class="nav-arrow" aria-label="Mês anterior">◀</button>
+        <div class="month-nav-center">
+          <div class="month-label" id="monthLabel">—</div>
+          <div class="month-badge" id="monthBadge"></div>
         </div>
-        <div class="saldo-updated" id="saldoAtualizadoEm"></div>
+        <button type="button" id="btnNextMonth" class="nav-arrow" aria-label="Próximo mês">▶</button>
+      </div>
+
+      <div class="top-cards">
+        <div class="saldo-card">
+          <div class="saldo-label">Saldo do cartão</div>
+          <div class="saldo-input-wrap">
+            <span class="saldo-prefix">R$</span>
+            <input type="text" id="saldoCartao" placeholder="0,00" inputmode="decimal">
+          </div>
+          <div class="saldo-updated" id="saldoAtualizadoEm"></div>
+        </div>
+        <div class="fechamento-card">
+          <div class="saldo-label">Fechamento</div>
+          <input type="date" id="dataFechamento">
+          <div class="fechamento-readout" id="fechamentoReadout"></div>
+        </div>
       </div>
 
       <div class="ledger">
@@ -521,10 +615,8 @@
       <div class="section-title" style="margin-top:0;">
         <h2>Exportar</h2>
       </div>
-      <p class="hint">Gera o XML da fatura atual pra você mandar por WhatsApp, e-mail etc. pro seu familiar importar no aparelho dele.</p>
-      <button class="btn btn-primary" id="btnExport">Gerar e baixar XML</button>
-      <button class="btn btn-secondary" id="btnPublish">🌐 Baixar para publicar (fatura-atual.xml)</button>
-      <p class="hint" style="margin-top:8px;">Baixe este e suba no GitHub (mesmo nome, sem renomear) para o visualizador do seu familiar atualizar sozinho.</p>
+      <p class="hint">Gera o XML da fatura atual (sempre como <strong>fatura-atual.xml</strong>) pra você mandar por WhatsApp, e-mail, ou subir no GitHub para o visualizador do seu familiar atualizar sozinho.</p>
+      <button class="btn btn-primary" id="btnExport">🌐 Gerar e baixar XML (fatura-atual.xml)</button>
       <button class="btn btn-secondary" id="btnExportExcel">Baixar como planilha Excel (.xlsx)</button>
       <p class="hint" style="margin-top:8px;">A planilha é só para consulta/backup (abrir no Excel) — quem for importar no app continua precisando do arquivo .xml.</p>
       <textarea id="xmlOutput" readonly placeholder="O XML gerado aparece aqui — toque e segure pra copiar."></textarea>
@@ -550,7 +642,7 @@
 <script>
 (function(){
   const STORAGE_KEY = 'fatura_compartilhada_v1';
-  let data = { mes: '', ano: '', cartao: '', saldo_cartao: null, saldo_atualizado_em: null, avulsas: [], parceladas: [] };
+  let data = { mes: '', ano: '', cartao: '', saldo_cartao: null, saldo_atualizado_em: null, data_fechamento: null, avulsas: [], parceladas: [] };
 
   function fmtDataHora(iso){
     if(!iso) return '';
@@ -564,12 +656,120 @@
     return `Atualizado em ${dd}/${mm}/${yyyy} às ${hh}:${min}`;
   }
 
+  function fmtFechamento(dateStr){
+    if(!dateStr) return '';
+    const [y,m,d] = dateStr.split('-');
+    return `Fechamento em ${d}/${m}/${y}`;
+  }
+
   function renderSaldoAtualizado(){
     const el = document.getElementById('saldoAtualizadoEm');
     const txt = fmtDataHora(data.saldo_atualizado_em);
     el.textContent = txt;
     el.classList.toggle('show', !!txt);
   }
+
+  // ---- Navegação por mês ----
+  const HIST_KEY = 'fatura_historico_v1';
+  const MESES_PT = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  let viewOffset = 0;
+
+  function monthKeyFromParts(ano, mes){
+    return `${ano}-${String(mes).padStart(2,'0')}`;
+  }
+  function shiftMonthParts(ano, mes, delta){
+    const idx = (ano*12 + (mes-1)) + delta;
+    return { ano: Math.floor(idx/12), mes: (((idx%12)+12)%12)+1 };
+  }
+  function addMonthsToDateStr(dateStr, delta){
+    const [y,m,d] = dateStr.split('-').map(Number);
+    if(!y || !m || !d) return dateStr;
+    const idx = (y*12 + (m-1)) + delta;
+    const newY = Math.floor(idx/12);
+    const newM = (((idx%12)+12)%12)+1;
+    return `${newY}-${String(newM).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+  function monthLabel({ano, mes}){
+    return `${MESES_PT[mes-1]} de ${ano}`;
+  }
+  // App editável: "mês atual" é sempre o mês real do aparelho (é quem está lançando agora).
+  function getReferenceMonth(){
+    const now = new Date();
+    return { ano: now.getFullYear(), mes: now.getMonth()+1 };
+  }
+  function loadHistorico(){
+    try{
+      const raw = localStorage.getItem(HIST_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function saveHistorico(hist){
+    localStorage.setItem(HIST_KEY, JSON.stringify(hist));
+  }
+  function archiveCurrentMonth(){
+    const ref = getReferenceMonth();
+    const key = monthKeyFromParts(ref.ano, ref.mes);
+    const hist = loadHistorico();
+    hist[key] = {
+      avulsas: data.avulsas,
+      parceladas: data.parceladas,
+      saldo_cartao: data.saldo_cartao,
+      saldo_atualizado_em: data.saldo_atualizado_em,
+      data_fechamento: data.data_fechamento
+    };
+    saveHistorico(hist);
+  }
+
+  function getSnapshotForOffset(offset){
+    const ref = getReferenceMonth();
+    const target = shiftMonthParts(ref.ano, ref.mes, offset);
+    const key = monthKeyFromParts(target.ano, target.mes);
+
+    if(offset === 0){
+      return { kind:'atual', target, snapshot:{
+        avulsas:data.avulsas, parceladas:data.parceladas,
+        saldo_cartao:data.saldo_cartao, saldo_atualizado_em:data.saldo_atualizado_em,
+        data_fechamento:data.data_fechamento
+      }};
+    }
+    if(offset < 0){
+      const hist = loadHistorico();
+      if(hist[key]) return { kind:'arquivado', target, snapshot: hist[key] };
+      return { kind:'vazio', target, snapshot:{ avulsas:[], parceladas:[], saldo_cartao:null, saldo_atualizado_em:null, data_fechamento:null } };
+    }
+    const projParceladas = [];
+    data.parceladas.forEach(item=>{
+      const novaAtual = item.parcela_atual + offset;
+      if(novaAtual <= item.parcelas_totais){
+        projParceladas.push({
+          data: addMonthsToDateStr(item.data, offset),
+          descricao: item.descricao,
+          valor: item.valor,
+          parcela_atual: novaAtual,
+          parcelas_totais: item.parcelas_totais
+        });
+      }
+    });
+    return { kind:'projetado', target, snapshot:{ avulsas:[], parceladas:projParceladas, saldo_cartao:null, saldo_atualizado_em:null, data_fechamento:null } };
+  }
+
+  function maxFutureOffset(){
+    let max = 0;
+    data.parceladas.forEach(i=>{
+      const restante = i.parcelas_totais - i.parcela_atual;
+      if(restante > max) max = restante;
+    });
+    return max;
+  }
+
+  document.getElementById('btnPrevMonth').addEventListener('click', ()=>{
+    viewOffset -= 1;
+    render();
+  });
+  document.getElementById('btnNextMonth').addEventListener('click', ()=>{
+    viewOffset += 1;
+    render();
+  });
 
   // Aceita "2.625,43", "2625,43" ou "2625.43" e devolve um número (float)
   function parseBRLInput(str){
@@ -609,6 +809,13 @@
     saveData();
   });
 
+  document.getElementById('dataFechamento').addEventListener('change', ()=>{
+    const v = document.getElementById('dataFechamento').value;
+    data.data_fechamento = v === '' ? null : v;
+    saveData();
+    render();
+  });
+
   function loadData(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -619,10 +826,14 @@
     if(data.saldo_cartao !== null && data.saldo_cartao !== undefined){
       document.getElementById('saldoCartao').value = formatBRLInput(data.saldo_cartao);
     }
+    if(data.data_fechamento){
+      document.getElementById('dataFechamento').value = data.data_fechamento;
+    }
     renderSaldoAtualizado();
   }
   function saveData(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    archiveCurrentMonth();
   }
 
   function fmtBRL(v){
@@ -776,6 +987,7 @@
     views.forEach(v=>v.classList.remove('active'));
     document.querySelector('[data-view="ver"]').classList.add('active');
     document.getElementById('view-ver').classList.add('active');
+    viewOffset = 0;
     render();
   });
 
@@ -853,6 +1065,7 @@
       views.forEach(v=>v.classList.remove('active'));
       document.querySelector('[data-view="ver"]').classList.add('active');
       document.getElementById('view-ver').classList.add('active');
+      viewOffset = 0;
     }
     render();
   });
@@ -870,34 +1083,80 @@
   }
 
   function render(){
-    const totA = data.avulsas.reduce((s,i)=>s+i.valor,0);
-    const totP = data.parceladas.reduce((s,i)=>s+i.valor,0);
+    const { kind, target, snapshot } = getSnapshotForOffset(viewOffset);
+    const isEditable = (kind === 'atual');
+
+    // Cabeçalho de navegação
+    document.getElementById('monthLabel').textContent = monthLabel(target);
+    const badgeEl = document.getElementById('monthBadge');
+    const badgeTextos = { atual: 'Mês atual', arquivado: 'Arquivado', projetado: 'Prévia — parcelas a vencer', vazio: 'Sem dados arquivados' };
+    badgeEl.textContent = badgeTextos[kind];
+    badgeEl.className = 'month-badge ' + kind;
+    document.getElementById('btnNextMonth').disabled = viewOffset >= maxFutureOffset();
+    document.getElementById('btnPrevMonth').disabled = viewOffset <= -36;
+
+    // Saldo e fechamento — editáveis só no mês atual
+    const saldoInput = document.getElementById('saldoCartao');
+    const fechInput = document.getElementById('dataFechamento');
+    saldoInput.disabled = !isEditable;
+    fechInput.disabled = !isEditable;
+    if(isEditable){
+      saldoInput.value = formatBRLInput(data.saldo_cartao);
+      fechInput.value = data.data_fechamento || '';
+      renderSaldoAtualizado();
+      const readout = document.getElementById('fechamentoReadout');
+      readout.textContent = fmtFechamento(data.data_fechamento);
+      readout.classList.toggle('set', !!data.data_fechamento);
+    } else {
+      saldoInput.value = (snapshot.saldo_cartao !== null && snapshot.saldo_cartao !== undefined) ? formatBRLInput(snapshot.saldo_cartao) : '';
+      fechInput.value = snapshot.data_fechamento || '';
+      document.getElementById('saldoAtualizadoEm').classList.remove('show');
+      const readout = document.getElementById('fechamentoReadout');
+      if(snapshot.data_fechamento){
+        readout.textContent = fmtFechamento(snapshot.data_fechamento);
+        readout.classList.add('set');
+      } else {
+        readout.textContent = kind === 'projetado' ? 'Ainda não fechado' : '';
+        readout.classList.remove('set');
+      }
+    }
+
+    const totA = snapshot.avulsas.reduce((s,i)=>s+i.valor,0);
+    const totP = snapshot.parceladas.reduce((s,i)=>s+i.valor,0);
     document.getElementById('totalAvulsas').textContent = fmtBRL(totA);
     document.getElementById('totalParceladas').textContent = fmtBRL(totP);
     document.getElementById('totalGeral').textContent = fmtBRL(totA+totP);
-    document.getElementById('countAvulsas').textContent = data.avulsas.length;
-    document.getElementById('countParceladas').textContent = data.parceladas.length;
+    document.getElementById('countAvulsas').textContent = snapshot.avulsas.length;
+    document.getElementById('countParceladas').textContent = snapshot.parceladas.length;
+
+    const avisoEdicao = !isEditable ? '<div class="hint" style="margin:0 0 10px 0;">Somente o mês atual pode ser editado. Lançamentos novos vão sempre para o mês atual.</div>' : '';
 
     const listA = document.getElementById('listAvulsas');
-    listA.innerHTML = '';
-    if(data.avulsas.length === 0){
-      listA.innerHTML = '<div class="empty">Nenhuma compra avulsa lançada ainda.</div>';
+    listA.innerHTML = avisoEdicao;
+    if(snapshot.avulsas.length === 0){
+      listA.innerHTML += kind === 'projetado'
+        ? '<div class="empty">Compras avulsas não entram na prévia — só aparecem depois de lançadas no mês.</div>'
+        : '<div class="empty">Nenhuma compra avulsa neste mês.</div>';
     } else {
-      data.avulsas
+      snapshot.avulsas
         .map((item, idx)=>({item, idx}))
         .sort((a,b)=> a.item.data < b.item.data ? 1 : -1)
         .forEach(({item, idx})=>{
           const el = document.createElement('div');
           el.className = 'item';
-          el.dataset.list = 'avulsas';
-          el.dataset.idx = idx;
+          if(isEditable){
+            el.dataset.list = 'avulsas';
+            el.dataset.idx = idx;
+          } else {
+            el.style.cursor = 'default';
+          }
           el.innerHTML = `
             <div class="info">
               <div class="desc">${escapeHtml(item.descricao)}</div>
               <div class="meta">${fmtDate(item.data)}</div>
             </div>
             <div class="valor">${fmtBRL(item.valor)}</div>
-            <button class="del" data-list="avulsas" data-idx="${idx}">✕</button>
+            ${isEditable ? `<button class="del" data-list="avulsas" data-idx="${idx}">✕</button>` : ''}
           `;
           listA.appendChild(el);
         });
@@ -905,24 +1164,31 @@
 
     const listP = document.getElementById('listParceladas');
     listP.innerHTML = '';
-    if(data.parceladas.length === 0){
-      listP.innerHTML = '<div class="empty">Nenhuma compra parcelada lançada ainda.</div>';
+    if(snapshot.parceladas.length === 0){
+      listP.innerHTML = kind === 'vazio'
+        ? '<div class="empty">Nenhuma fatura arquivada para este mês neste aparelho.</div>'
+        : '<div class="empty">Nenhuma compra parcelada neste mês.</div>';
     } else {
-      data.parceladas
+      snapshot.parceladas
         .map((item, idx)=>({item, idx}))
         .sort((a,b)=> a.item.data < b.item.data ? 1 : -1)
         .forEach(({item, idx})=>{
           const el = document.createElement('div');
           el.className = 'item';
-          el.dataset.list = 'parceladas';
-          el.dataset.idx = idx;
+          if(isEditable){
+            el.dataset.list = 'parceladas';
+            el.dataset.idx = idx;
+          } else {
+            el.style.cursor = 'default';
+          }
+          const ultima = item.parcela_atual === item.parcelas_totais;
           el.innerHTML = `
             <div class="info">
               <div class="desc">${escapeHtml(item.descricao)}</div>
-              <div class="meta">${fmtDate(item.data)} &middot; <span class="parcela-tag">${item.parcela_atual}/${item.parcelas_totais}</span></div>
+              <div class="meta">${fmtDate(item.data)} &middot; <span class="parcela-tag${ultima ? ' ultima' : ''}">${item.parcela_atual}/${item.parcelas_totais}</span></div>
             </div>
             <div class="valor">${fmtBRL(item.valor)}</div>
-            <button class="del" data-list="parceladas" data-idx="${idx}">✕</button>
+            ${isEditable ? `<button class="del" data-list="parceladas" data-idx="${idx}">✕</button>` : ''}
           `;
           listP.appendChild(el);
         });
@@ -935,11 +1201,13 @@
       });
     });
 
-    document.querySelectorAll('.item').forEach(el=>{
-      el.addEventListener('click', ()=>{
-        startEdit(el.dataset.list, parseInt(el.dataset.idx));
+    if(isEditable){
+      document.querySelectorAll('.item[data-list]').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          startEdit(el.dataset.list, parseInt(el.dataset.idx));
+        });
       });
-    });
+    }
   }
 
   function escapeHtml(str){
@@ -966,6 +1234,9 @@
       if(data.saldo_atualizado_em){
         xml += `  <saldo_atualizado_em>${data.saldo_atualizado_em}</saldo_atualizado_em>\n`;
       }
+    }
+    if(data.data_fechamento){
+      xml += `  <data_fechamento>${data.data_fechamento}</data_fechamento>\n`;
     }
     xml += '  <compras_avulsas>\n';
     data.avulsas.forEach(item=>{
@@ -1004,24 +1275,13 @@
   }
 
   document.getElementById('btnExport').addEventListener('click', ()=>{
-    const { xml, mes, ano } = buildXml();
-    document.getElementById('xmlOutput').value = xml;
-    try{
-      downloadXml(xml, `fatura-${ano}-${mes}.xml`);
-      toast('XML gerado e baixado.');
-    }catch(e){
-      toast('XML gerado abaixo — copie manualmente.');
-    }
-  });
-
-  document.getElementById('btnPublish').addEventListener('click', ()=>{
     const { xml } = buildXml();
     document.getElementById('xmlOutput').value = xml;
     try{
       downloadXml(xml, 'fatura-atual.xml');
-      toast('fatura-atual.xml baixado — suba no GitHub sem renomear.');
+      toast('fatura-atual.xml baixado.');
     }catch(e){
-      toast('Não foi possível baixar. Copie o XML manualmente abaixo.');
+      toast('XML gerado abaixo — copie manualmente.');
     }
   });
 
@@ -1119,6 +1379,8 @@
         const saldoVal = saldoNode ? parseFloat(saldoNode.textContent) : null;
         const saldoDataNode = xmlDoc.querySelector('fatura > saldo_atualizado_em');
         const saldoData = saldoDataNode ? saldoDataNode.textContent : null;
+        const fechamentoNode = xmlDoc.querySelector('fatura > data_fechamento');
+        const fechamentoVal = fechamentoNode ? fechamentoNode.textContent : null;
 
         const avulsas = [];
         xmlDoc.querySelectorAll('compras_avulsas > compra').forEach(node=>{
@@ -1144,8 +1406,11 @@
         data.parceladas = parceladas;
         data.saldo_cartao = (saldoVal !== null && !isNaN(saldoVal)) ? saldoVal : null;
         data.saldo_atualizado_em = data.saldo_cartao !== null ? saldoData : null;
+        data.data_fechamento = fechamentoVal;
         document.getElementById('saldoCartao').value = data.saldo_cartao !== null ? formatBRLInput(data.saldo_cartao) : '';
+        document.getElementById('dataFechamento').value = data.data_fechamento || '';
         renderSaldoAtualizado();
+        viewOffset = 0;
         saveData();
         render();
 
@@ -1163,10 +1428,12 @@
   });
 
   document.getElementById('btnClear').addEventListener('click', ()=>{
-    if(confirm('Apagar todos os lançamentos e o saldo deste aparelho?')){
-      data = { mes:'', ano:'', cartao:'', saldo_cartao: null, saldo_atualizado_em: null, avulsas: [], parceladas: [] };
+    if(confirm('Apagar todos os lançamentos, saldo e fechamento deste aparelho?')){
+      data = { mes:'', ano:'', cartao:'', saldo_cartao: null, saldo_atualizado_em: null, data_fechamento: null, avulsas: [], parceladas: [] };
       document.getElementById('saldoCartao').value = '';
+      document.getElementById('dataFechamento').value = '';
       renderSaldoAtualizado();
+      viewOffset = 0;
       saveData();
       render();
       toast('Fatura limpa.');

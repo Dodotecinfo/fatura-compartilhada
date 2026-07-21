@@ -120,12 +120,72 @@
     white-space: nowrap;
   }
 
+  .month-nav{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .nav-arrow{
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .nav-arrow:disabled{ opacity: 0.3; cursor: default; }
+  .month-nav-center{ text-align: center; flex: 1; }
+  .month-label{
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .month-badge{
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .month-badge.atual{ color: var(--green); }
+  .month-badge.arquivado{ color: var(--muted); }
+  .month-badge.projetado{ color: var(--red); }
+  .month-badge.vazio{ color: var(--muted); }
+
+  .top-cards{
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2px;
+    margin-bottom: 16px;
+  }
+  .fechamento-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .fechamento-readout{
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .fechamento-readout.set{ color: var(--green); font-weight: 600; }
+
   .saldo-card{
     background: var(--surface);
     border: 1px solid var(--red-dim);
     border-radius: 10px;
     padding: 14px 16px;
-    margin-bottom: 16px;
   }
   .saldo-label{
     font-family: var(--mono);
@@ -217,6 +277,7 @@
   }
   .item .meta{ font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
   .item .parcela-tag{ color: var(--green); }
+  .item .parcela-tag.ultima{ color: var(--red); font-weight: 700; }
   .item .valor{ font-family: var(--mono); font-size: 14px; font-weight: 600; white-space: nowrap; }
 
   .empty{
@@ -293,10 +354,25 @@
         <button type="button" id="btnRefresh">🔄 Atualizar</button>
       </div>
 
-      <div class="saldo-card">
-        <div class="saldo-label">Saldo do cartão de crédito</div>
-        <div class="saldo-value" id="saldoValue">—</div>
-        <div class="saldo-updated" id="saldoAtualizadoEm"></div>
+      <div class="month-nav">
+        <button type="button" id="btnPrevMonth" class="nav-arrow" aria-label="Mês anterior">◀</button>
+        <div class="month-nav-center">
+          <div class="month-label" id="monthLabel">—</div>
+          <div class="month-badge" id="monthBadge"></div>
+        </div>
+        <button type="button" id="btnNextMonth" class="nav-arrow" aria-label="Próximo mês">▶</button>
+      </div>
+
+      <div class="top-cards">
+        <div class="saldo-card">
+          <div class="saldo-label">Saldo do cartão</div>
+          <div class="saldo-value" id="saldoValue">—</div>
+          <div class="saldo-updated" id="saldoAtualizadoEm"></div>
+        </div>
+        <div class="fechamento-card">
+          <div class="saldo-label">Fechamento</div>
+          <div class="fechamento-readout" id="fechamentoReadout">—</div>
+        </div>
       </div>
 
       <div class="ledger">
@@ -361,7 +437,7 @@
 <script>
 (function(){
   const STORAGE_KEY = 'fatura_visualizador_v1';
-  let data = { mes: '', ano: '', cartao: '', saldo_cartao: null, saldo_atualizado_em: null, avulsas: [], parceladas: [] };
+  let data = { mes: '', ano: '', cartao: '', saldo_cartao: null, saldo_atualizado_em: null, data_fechamento: null, avulsas: [], parceladas: [] };
 
   function loadData(){
     try{
@@ -373,7 +449,111 @@
   }
   function saveData(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    archiveCurrentMonth();
   }
+
+  // ---- Navegação por mês ----
+  const HIST_KEY = 'fatura_visualizador_historico_v1';
+  const MESES_PT = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  let viewOffset = 0;
+
+  function monthKeyFromParts(ano, mes){
+    return `${ano}-${String(mes).padStart(2,'0')}`;
+  }
+  function shiftMonthParts(ano, mes, delta){
+    const idx = (ano*12 + (mes-1)) + delta;
+    return { ano: Math.floor(idx/12), mes: (((idx%12)+12)%12)+1 };
+  }
+  function addMonthsToDateStr(dateStr, delta){
+    const [y,m,d] = dateStr.split('-').map(Number);
+    if(!y || !m || !d) return dateStr;
+    const idx = (y*12 + (m-1)) + delta;
+    const newY = Math.floor(idx/12);
+    const newM = (((idx%12)+12)%12)+1;
+    return `${newY}-${String(newM).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+  function monthLabelTxt({ano, mes}){
+    return `${MESES_PT[mes-1]} de ${ano}`;
+  }
+  function fmtFechamento(dateStr){
+    if(!dateStr) return '';
+    const [y,m,d] = dateStr.split('-');
+    return `Fechamento em ${d}/${m}/${y}`;
+  }
+  function getReferenceMonth(){
+    const now = new Date();
+    return { ano: now.getFullYear(), mes: now.getMonth()+1 };
+  }
+  function loadHistorico(){
+    try{
+      const raw = localStorage.getItem(HIST_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function saveHistorico(hist){
+    localStorage.setItem(HIST_KEY, JSON.stringify(hist));
+  }
+  function archiveCurrentMonth(){
+    const ref = getReferenceMonth();
+    const key = monthKeyFromParts(ref.ano, ref.mes);
+    const hist = loadHistorico();
+    hist[key] = {
+      avulsas: data.avulsas,
+      parceladas: data.parceladas,
+      saldo_cartao: data.saldo_cartao,
+      saldo_atualizado_em: data.saldo_atualizado_em,
+      data_fechamento: data.data_fechamento
+    };
+    saveHistorico(hist);
+  }
+  function getSnapshotForOffset(offset){
+    const ref = getReferenceMonth();
+    const target = shiftMonthParts(ref.ano, ref.mes, offset);
+    const key = monthKeyFromParts(target.ano, target.mes);
+
+    if(offset === 0){
+      return { kind:'atual', target, snapshot:{
+        avulsas:data.avulsas, parceladas:data.parceladas,
+        saldo_cartao:data.saldo_cartao, saldo_atualizado_em:data.saldo_atualizado_em,
+        data_fechamento:data.data_fechamento
+      }};
+    }
+    if(offset < 0){
+      const hist = loadHistorico();
+      if(hist[key]) return { kind:'arquivado', target, snapshot: hist[key] };
+      return { kind:'vazio', target, snapshot:{ avulsas:[], parceladas:[], saldo_cartao:null, saldo_atualizado_em:null, data_fechamento:null } };
+    }
+    const projParceladas = [];
+    data.parceladas.forEach(item=>{
+      const novaAtual = item.parcela_atual + offset;
+      if(novaAtual <= item.parcelas_totais){
+        projParceladas.push({
+          data: addMonthsToDateStr(item.data, offset),
+          descricao: item.descricao,
+          valor: item.valor,
+          parcela_atual: novaAtual,
+          parcelas_totais: item.parcelas_totais
+        });
+      }
+    });
+    return { kind:'projetado', target, snapshot:{ avulsas:[], parceladas:projParceladas, saldo_cartao:null, saldo_atualizado_em:null, data_fechamento:null } };
+  }
+  function maxFutureOffset(){
+    let max = 0;
+    data.parceladas.forEach(i=>{
+      const restante = i.parcelas_totais - i.parcela_atual;
+      if(restante > max) max = restante;
+    });
+    return max;
+  }
+  document.getElementById('btnPrevMonth').addEventListener('click', ()=>{
+    viewOffset -= 1;
+    render();
+  });
+  document.getElementById('btnNextMonth').addEventListener('click', ()=>{
+    viewOffset += 1;
+    render();
+  });
 
   function fmtBRL(v){
     return v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
@@ -422,28 +602,55 @@
   });
 
   function render(){
-    const totA = data.avulsas.reduce((s,i)=>s+i.valor,0);
-    const totP = data.parceladas.reduce((s,i)=>s+i.valor,0);
+    const { kind, target, snapshot } = getSnapshotForOffset(viewOffset);
+
+    document.getElementById('monthLabel').textContent = monthLabelTxt(target);
+    const badgeEl = document.getElementById('monthBadge');
+    const badgeTextos = { atual: 'Mês atual', arquivado: 'Arquivado', projetado: 'Prévia — parcelas a vencer', vazio: 'Sem dados arquivados' };
+    badgeEl.textContent = badgeTextos[kind];
+    badgeEl.className = 'month-badge ' + kind;
+    document.getElementById('btnNextMonth').disabled = viewOffset >= maxFutureOffset();
+    document.getElementById('btnPrevMonth').disabled = viewOffset <= -36;
+
+    const saldoEl = document.getElementById('saldoValue');
+    saldoEl.textContent = (snapshot.saldo_cartao !== null && snapshot.saldo_cartao !== undefined)
+      ? fmtBRL(Number(snapshot.saldo_cartao)) : '—';
+    const updEl = document.getElementById('saldoAtualizadoEm');
+    if(kind === 'atual'){
+      const txt = fmtDataHora(snapshot.saldo_atualizado_em);
+      updEl.textContent = txt;
+      updEl.classList.toggle('show', !!txt);
+    } else {
+      updEl.classList.remove('show');
+    }
+
+    const readout = document.getElementById('fechamentoReadout');
+    if(snapshot.data_fechamento){
+      readout.textContent = fmtFechamento(snapshot.data_fechamento);
+      readout.classList.add('set');
+    } else {
+      readout.textContent = kind === 'projetado' ? 'Ainda não fechado' : '—';
+      readout.classList.remove('set');
+    }
+
+    const totA = snapshot.avulsas.reduce((s,i)=>s+i.valor,0);
+    const totP = snapshot.parceladas.reduce((s,i)=>s+i.valor,0);
     document.getElementById('totalAvulsas').textContent = fmtBRL(totA);
     document.getElementById('totalParceladas').textContent = fmtBRL(totP);
     document.getElementById('totalGeral').textContent = fmtBRL(totA+totP);
-    document.getElementById('countAvulsas').textContent = data.avulsas.length;
-    document.getElementById('countParceladas').textContent = data.parceladas.length;
-
-    const saldoEl = document.getElementById('saldoValue');
-    saldoEl.textContent = (data.saldo_cartao !== null && data.saldo_cartao !== undefined)
-      ? fmtBRL(Number(data.saldo_cartao)) : '—';
-    const updEl = document.getElementById('saldoAtualizadoEm');
-    const txt = fmtDataHora(data.saldo_atualizado_em);
-    updEl.textContent = txt;
-    updEl.classList.toggle('show', !!txt);
+    document.getElementById('countAvulsas').textContent = snapshot.avulsas.length;
+    document.getElementById('countParceladas').textContent = snapshot.parceladas.length;
 
     const listA = document.getElementById('listAvulsas');
     listA.innerHTML = '';
-    if(data.avulsas.length === 0){
-      listA.innerHTML = '<div class="empty">Nenhuma compra avulsa nesta fatura.</div>';
+    if(snapshot.avulsas.length === 0){
+      listA.innerHTML = kind === 'projetado'
+        ? '<div class="empty">Compras avulsas não entram na prévia — só aparecem depois de lançadas no mês.</div>'
+        : (kind === 'vazio'
+          ? '<div class="empty">Nenhuma fatura arquivada para este mês neste aparelho.</div>'
+          : '<div class="empty">Nenhuma compra avulsa neste mês.</div>');
     } else {
-      data.avulsas
+      snapshot.avulsas
         .slice()
         .sort((a,b)=> a.data < b.data ? 1 : -1)
         .forEach(item=>{
@@ -462,19 +669,22 @@
 
     const listP = document.getElementById('listParceladas');
     listP.innerHTML = '';
-    if(data.parceladas.length === 0){
-      listP.innerHTML = '<div class="empty">Nenhuma compra parcelada nesta fatura.</div>';
+    if(snapshot.parceladas.length === 0){
+      listP.innerHTML = kind === 'vazio'
+        ? '<div class="empty">Nenhuma fatura arquivada para este mês neste aparelho.</div>'
+        : '<div class="empty">Nenhuma compra parcelada neste mês.</div>';
     } else {
-      data.parceladas
+      snapshot.parceladas
         .slice()
         .sort((a,b)=> a.data < b.data ? 1 : -1)
         .forEach(item=>{
           const el = document.createElement('div');
           el.className = 'item';
+          const ultima = item.parcela_atual === item.parcelas_totais;
           el.innerHTML = `
             <div class="info">
               <div class="desc">${escapeHtml(item.descricao)}</div>
-              <div class="meta">${fmtDate(item.data)} &middot; <span class="parcela-tag">${item.parcela_atual}/${item.parcelas_totais}</span></div>
+              <div class="meta">${fmtDate(item.data)} &middot; <span class="parcela-tag${ultima ? ' ultima' : ''}">${item.parcela_atual}/${item.parcelas_totais}</span></div>
             </div>
             <div class="valor">${fmtBRL(item.valor)}</div>
           `;
@@ -511,6 +721,8 @@
     const saldoVal = saldoNode ? parseFloat(saldoNode.textContent) : null;
     const saldoDataNode = xmlDoc.querySelector('fatura > saldo_atualizado_em');
     const saldoData = saldoDataNode ? saldoDataNode.textContent : null;
+    const fechamentoNode = xmlDoc.querySelector('fatura > data_fechamento');
+    const fechamentoVal = fechamentoNode ? fechamentoNode.textContent : null;
 
     const avulsas = [];
     xmlDoc.querySelectorAll('compras_avulsas > compra').forEach(node=>{
@@ -536,6 +748,8 @@
     data.parceladas = parceladas;
     data.saldo_cartao = (saldoVal !== null && !isNaN(saldoVal)) ? saldoVal : null;
     data.saldo_atualizado_em = data.saldo_cartao !== null ? saldoData : null;
+    data.data_fechamento = fechamentoVal;
+    viewOffset = 0;
     saveData();
     render();
     return { avulsas: avulsas.length, parceladas: parceladas.length };
@@ -642,7 +856,8 @@
 
   document.getElementById('btnClear').addEventListener('click', ()=>{
     if(confirm('Apagar a fatura importada deste aparelho?')){
-      data = { mes:'', ano:'', cartao:'', saldo_cartao: null, saldo_atualizado_em: null, avulsas: [], parceladas: [] };
+      data = { mes:'', ano:'', cartao:'', saldo_cartao: null, saldo_atualizado_em: null, data_fechamento: null, avulsas: [], parceladas: [] };
+      viewOffset = 0;
       saveData();
       render();
       toast('Dados limpos.');

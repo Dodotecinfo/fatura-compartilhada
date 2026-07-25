@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fatura mes="07" ano="2026" cartao="Bradesco">
-  <saldo_cartao>1890.35</saldo_cartao>
-  <saldo_atualizado_em>2026-07-18T00:08:03.244Z</saldo_atualizado_em>
+  <saldo_cartao>748.49</saldo_cartao>
+  <saldo_atualizado_em>2026-07-25T21:51:22.795Z</saldo_atualizado_em>
+  <data_fechamento>2026-07-29</data_fechamento>
   <compras_avulsas>
     <compra>
       <data>2026-07-05</data>
@@ -232,6 +233,151 @@
       <data>2026-07-17</data>
       <descricao>SAQUE A VISTA</descricao>
       <valor>150.00</valor>
+    </compra>
+    <compra>
+      <data>2026-07-18</data>
+      <descricao>MP*MELIMAIS</descricao>
+      <valor>19.90</valor>
+    </compra>
+    <compra>
+      <data>2026-07-19</data>
+      <descricao>GOOGLE ONE</descricao>
+      <valor>9.99</valor>
+    </compra>
+    <compra>
+      <data>2026-07-19</data>
+      <descricao>POSTO ANCORA</descricao>
+      <valor>29.44</valor>
+    </compra>
+    <compra>
+      <data>2026-07-19</data>
+      <descricao>PREZUNIC 709</descricao>
+      <valor>75.65</valor>
+    </compra>
+    <compra>
+      <data>2026-07-20</data>
+      <descricao>J ALVES ARTIGOS</descricao>
+      <valor>39.50</valor>
+    </compra>
+    <compra>
+      <data>2026-07-20</data>
+      <descricao>SUA ACADEMIA</descricao>
+      <valor>149.90</valor>
+    </compra>
+    <compra>
+      <data>2026-07-20</data>
+      <descricao>PREZUNIC 709</descricao>
+      <valor>10.76</valor>
+    </compra>
+    <compra>
+      <data>2026-07-20</data>
+      <descricao>DROGASMIL</descricao>
+      <valor>7.18</valor>
+    </compra>
+    <compra>
+      <data>2026-07-20</data>
+      <descricao>IOF ADICIONAL SAQUE</descricao>
+      <valor>0.57</valor>
+    </compra>
+    <compra>
+      <data>2026-07-20</data>
+      <descricao>IOF DIARIO SAQUE</descricao>
+      <valor>0.31</valor>
+    </compra>
+    <compra>
+      <data>2026-07-21</data>
+      <descricao>AMAZON PRIME CANAIS</descricao>
+      <valor>29.90</valor>
+    </compra>
+    <compra>
+      <data>2026-07-21</data>
+      <descricao>RIO SUL TRAD. XEREM</descricao>
+      <valor>91.91</valor>
+    </compra>
+    <compra>
+      <data>2026-07-21</data>
+      <descricao>DL*UBERRIDES</descricao>
+      <valor>10.93</valor>
+    </compra>
+    <compra>
+      <data>2026-07-21</data>
+      <descricao>PICPAY*MUNDIALRECREIO</descricao>
+      <valor>45.82</valor>
+    </compra>
+    <compra>
+      <data>2026-07-21</data>
+      <descricao>MP*DOUGLASRODRIGUESDEOLIV</descricao>
+      <valor>31.95</valor>
+    </compra>
+    <compra>
+      <data>2026-07-22</data>
+      <descricao>AMAZONPRIMEBR</descricao>
+      <valor>19.90</valor>
+    </compra>
+    <compra>
+      <data>2026-07-22</data>
+      <descricao>66560289JESSICA</descricao>
+      <valor>10.06</valor>
+    </compra>
+    <compra>
+      <data>2026-07-22</data>
+      <descricao>66560289JESSICA</descricao>
+      <valor>24.71</valor>
+    </compra>
+    <compra>
+      <data>2026-07-22</data>
+      <descricao>CRD*SUELI JOSE DOS SAN</descricao>
+      <valor>7.75</valor>
+    </compra>
+    <compra>
+      <data>2026-07-22</data>
+      <descricao>DL*UBERRIDES</descricao>
+      <valor>5.00</valor>
+    </compra>
+    <compra>
+      <data>2026-07-22</data>
+      <descricao>DL*UBERRIDES</descricao>
+      <valor>13.30</valor>
+    </compra>
+    <compra>
+      <data>2026-07-22</data>
+      <descricao>PICPAY*MUNDIALRECREIO</descricao>
+      <valor>18.13</valor>
+    </compra>
+    <compra>
+      <data>2026-07-23</data>
+      <descricao>PICPAY*MUNDIALRECREIO</descricao>
+      <valor>26.89</valor>
+    </compra>
+    <compra>
+      <data>2026-07-24</data>
+      <descricao>IFD*GRUPOGENNIUSBRAS</descricao>
+      <valor>22.63</valor>
+    </compra>
+    <compra>
+      <data>2026-07-24</data>
+      <descricao>DL*UBERRIDES</descricao>
+      <valor>10.96</valor>
+    </compra>
+    <compra>
+      <data>2026-07-24</data>
+      <descricao>DL*UBERRIDES</descricao>
+      <valor>11.95</valor>
+    </compra>
+    <compra>
+      <data>2026-07-24</data>
+      <descricao>SUPERMARKET TANQUE</descricao>
+      <valor>25.73</valor>
+    </compra>
+    <compra>
+      <data>2026-07-25</data>
+      <descricao>AUTO POSTO PISTAO LTDA</descricao>
+      <valor>23.25</valor>
+    </compra>
+    <compra>
+      <data>2026-07-25</data>
+      <descricao>PREZUNIC 709</descricao>
+      <valor>72.28</valor>
     </compra>
   </compras_avulsas>
   <compras_parceladas>
@@ -539,9 +685,51 @@
     <compra>
       <data>2026-07-17</data>
       <descricao>SAQUE PARCELADO</descricao>
-      <valor>56.15</valor>
+      <valor>48.04</valor>
       <parcela_atual>1</parcela_atual>
       <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-17</data>
+      <descricao>SAQUE PARCELADO IOF ADICIONAL</descricao>
+      <valor>0.19</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-17</data>
+      <descricao>SAQUE PARCELADO IOF DIARIO</descricao>
+      <valor>0.10</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-17</data>
+      <descricao>SAQUE PARCELADO ENCARGOS</descricao>
+      <valor>7.82</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>3</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-19</data>
+      <descricao>SUPERMARKET TANQUE</descricao>
+      <valor>113.83</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-19</data>
+      <descricao>SUPERMARKET TANQUE IOF ADICIONAL</descricao>
+      <valor>0.42</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
+    <compra>
+      <data>2026-07-19</data>
+      <descricao>SUPERMARKET TANQUE IOF DIARIO</descricao>
+      <valor>0.22</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
     </compra>
   </compras_parceladas>
 </fatura>

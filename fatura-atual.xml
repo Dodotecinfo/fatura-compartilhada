@@ -1,5 +1,6 @@
-"<?xml version=""1.0"" encoding=""UTF-8""?>
-<fatura mes=""07"" ano=""2026"" cartao=""Bradesco"">
+<?xml version="1.0" encoding="UTF-8"?>
+<fatura mes="07" ano="2026" cartao="Bradesco">
+  <data_fechamento>2026-07-29</data_fechamento>
   <compras_avulsas>
     <compra>
       <data>2026-07-28</data>
@@ -416,6 +417,11 @@
       <descricao>Supermarket Tanque RIO DE JANEIR</descricao>
       <valor>26.64</valor>
     </compra>
+    <compra>
+      <data>2026-07-28</data>
+      <descricao>PAGAMENTO PENDENTE</descricao>
+      <valor>996.17</valor>
+    </compra>
   </compras_avulsas>
   <compras_parceladas>
     <compra>
@@ -748,4 +754,4 @@
       <parcelas_totais>12</parcelas_totais>
     </compra>
   </compras_parceladas>
-</fatura>"
+</fatura>

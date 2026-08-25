@@ -1,5 +1,8 @@
-"<?xml version=""1.0"" encoding=""UTF-8""?>
-<fatura mes=""07"" ano=""2026"" cartao=""Bradesco"">
+<?xml version="1.0" encoding="UTF-8"?>
+<fatura mes="08" ano="2026" cartao="Bradesco">
+  <saldo_cartao>1497.07</saldo_cartao>
+  <saldo_atualizado_em>2026-08-25T01:26:11.455Z</saldo_atualizado_em>
+  <data_fechamento>2026-08-28</data_fechamento>
   <compras_avulsas>
     <compra>
       <data>2026-08-20</data>
@@ -451,6 +454,91 @@
       <descricao>ESTORNO ENCARGOS ROTATIVO</descricao>
       <valor>-57.46</valor>
     </compra>
+    <compra>
+      <data>2026-08-21</data>
+      <descricao>Dl*uberrides</descricao>
+      <valor>7.95</valor>
+    </compra>
+    <compra>
+      <data>2026-08-21</data>
+      <descricao>MATE AMERICAS 2005</descricao>
+      <valor>20.40</valor>
+    </compra>
+    <compra>
+      <data>2026-08-21</data>
+      <descricao>Prezunic 709</descricao>
+      <valor>59.96</valor>
+    </compra>
+    <compra>
+      <data>2026-08-21</data>
+      <descricao>AUTO POSTO PISTAO LTDA</descricao>
+      <valor>13.99</valor>
+    </compra>
+    <compra>
+      <data>2026-08-21</data>
+      <descricao>Amazon Prime Canais</descricao>
+      <valor>29.90</valor>
+    </compra>
+    <compra>
+      <data>2026-08-22</data>
+      <descricao>Prezunic 709</descricao>
+      <valor>168.35</valor>
+    </compra>
+    <compra>
+      <data>2026-08-22</data>
+      <descricao>Dl*uberrides</descricao>
+      <valor>7.93</valor>
+    </compra>
+    <compra>
+      <data>2026-08-22</data>
+      <descricao>Amazon Prime Br</descricao>
+      <valor>19.90</valor>
+    </compra>
+    <compra>
+      <data>2026-08-22</data>
+      <descricao>Dl*uberrides</descricao>
+      <valor>7.95</valor>
+    </compra>
+    <compra>
+      <data>2026-08-22</data>
+      <descricao>Jim.com bulldog rock ba</descricao>
+      <valor>30.00</valor>
+    </compra>
+    <compra>
+      <data>2026-08-22</data>
+      <descricao>Bulldogrockbar</descricao>
+      <valor>27.50</valor>
+    </compra>
+    <compra>
+      <data>2026-08-22</data>
+      <descricao>Bulldogrockbar</descricao>
+      <valor>33.00</valor>
+    </compra>
+    <compra>
+      <data>2026-08-23</data>
+      <descricao>Dl*uberrides</descricao>
+      <valor>11.95</valor>
+    </compra>
+    <compra>
+      <data>2026-08-24</data>
+      <descricao>PICPAY*MUNDIALRECREI</descricao>
+      <valor>35.75</valor>
+    </compra>
+    <compra>
+      <data>2026-08-24</data>
+      <descricao>POSTO ANCORA</descricao>
+      <valor>23.10</valor>
+    </compra>
+    <compra>
+      <data>2026-08-24</data>
+      <descricao>Prezunic 709</descricao>
+      <valor>33.64</valor>
+    </compra>
+    <compra>
+      <data>2026-08-24</data>
+      <descricao>PICPAY*MUNDIALRECREI</descricao>
+      <valor>16.83</valor>
+    </compra>
   </compras_avulsas>
   <compras_parceladas>
     <compra>
@@ -803,5 +891,12 @@
       <parcela_atual>7</parcela_atual>
       <parcelas_totais>10</parcelas_totais>
     </compra>
+    <compra>
+      <data>2026-08-24</data>
+      <descricao>DIBA 695 TAQU</descricao>
+      <valor>71.10</valor>
+      <parcela_atual>1</parcela_atual>
+      <parcelas_totais>2</parcelas_totais>
+    </compra>
   </compras_parceladas>
-</fatura>"
+</fatura>
